@@ -12,15 +12,19 @@ export const HomeNavigator = () => (
       name="Room"
       component={Home}
       options={{
-        headerShown: false
+        headerShown: false,
       }}
     />
     <Stack.Screen
       name="Messaging"
       component={Messaging}
-      options={{
+      options={({ route }) => ({
         headerBackTitleVisible: false,
-      }}
+        title: route.params.title,
+        headerTitleStyle: {
+          fontWeight: "bold",
+        },
+      })}
     />
   </Stack.Navigator>
 );

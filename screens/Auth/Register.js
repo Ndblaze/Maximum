@@ -34,6 +34,7 @@ const Register = ({ navigation }) => {
 
         <Text style={styles.body}>Username</Text>
         <TextInput
+          maxLength={20}
           style={styles.username}
           defaultValue={username}
           onChangeText={(text) => setUsername(text)}
