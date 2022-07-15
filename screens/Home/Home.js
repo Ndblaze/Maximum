@@ -9,12 +9,13 @@ const Sections = ({ sectionsArray }) => {
   return (
     <View style={styles.division}>
       {sectionsArray.map((room) => (
-        <>
+        <View key={room.title}>
           <View style={styles.divisionTitleContainer}>
             <Text style={styles.divisionTitle}> {room.title} </Text>
           </View>
           {room.chartRoomTitle.map((chats) => (
             <Text
+              key={chats}
               onPress={() =>
                 navigation.navigate("Messaging", { title: "#" + "  " + chats })
               }
@@ -24,7 +25,7 @@ const Sections = ({ sectionsArray }) => {
               {chats}
             </Text>
           ))}
-        </>
+        </View>
       ))}
     </View>
   );
