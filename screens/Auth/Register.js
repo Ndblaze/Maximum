@@ -1,20 +1,57 @@
-import { StyleSheet, Text, View, Image, TextInput } from "react-native";
+import { StyleSheet, Text, View, Image } from "react-native";
 import React, { useState } from "react";
 import Layout from "../../components/Auth/Layout";
 import AuthButton from "../../components/Auth/AuthButton";
-import PhoneNumberInput from "../../components/Auth/PhoneNumberInput";
-import { isValidNumber } from "react-native-phone-number-input";
+import { Formik } from "formik";
+import * as yup from "yup";
+import firebase from "firebase";
+require("firebase/firestore");
+require("firebase/firebase-storage");
+
+import AppTextInput from "../../components/common/AppTextInput";
+import ErrorMessage from "../../components/common/ErrorMessage";
 
 const Register = ({ navigation }) => {
-  const [username, setUsername] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const validationSchema = yup.object().shape({
+    email: yup.string().required().email().label("Email"),
+    password: yup.string().required().min(4).label("Password"),
+    username: yup.string().required().min(4).label("Username"),
+  });
 
-  const validateInputs = () => {
-    const isValid = isValidNumber(phoneNumber);
-    if (isValid) {
-      navigation.navigate("NumberVerification");
-    } else {
-      alert("Error: Provide a valid phone number");
+  const profileInfo = (email, username, userID) => {
+    //console.log(email + username + userID);
+    const db = firebase.firestore();
+    db.collection("users")
+      .doc(userID)
+      .set({
+        email: email,
+        userID: userID,
+        username: username,
+      })
+      .then(() => {
+        console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        console.error("Error writing document: ", error);
+      });
+  };
+
+  const validateInputs = (values) => {
+    if (values) {
+      // alert(values.email + values.password + values.username);
+      const { email, password, username } = values;
+      firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then((result) => {
+          // console.log(result);
+          profileInfo(email, username, result.user.uid);
+          //store email and username at the user collection
+        })
+        .catch((error) => {
+          alert(error);
+          //console.log(error);
+        });
     }
   };
 
@@ -32,20 +69,63 @@ const Register = ({ navigation }) => {
           />
         </View>
 
-        <Text style={styles.body}>Username</Text>
-        <TextInput
-          maxLength={20}
-          style={styles.username}
-          defaultValue={username}
-          onChangeText={(text) => setUsername(text)}
-        />
+        <Formik
+          initialValues={{ email: "", password: "", username: "" }}
+          onSubmit={(values) => validateInputs(values)}
+          validationSchema={validationSchema}
+        >
+          {({
+            handleChange,
+            handleSubmit,
+            errors,
+            setFieldTouched,
+            touched,
+          }) => (
+            <>
+              <AppTextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                icon="email"
+                keyboardType="email-address"
+                onBlur={() => setFieldTouched("email")}
+                onChangeText={handleChange("email")}
+                placeholder="Email"
+                textContentType="emailAddress"
+              />
+              <ErrorMessage error={errors.email} visible={touched.email} />
+              <AppTextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                icon="lock"
+                placeholder="Password"
+                onBlur={() => setFieldTouched("password")}
+                onChangeText={handleChange("password")}
+                secureTextEntry={true}
+                textContentType="password"
+              />
+              <ErrorMessage
+                error={errors.password}
+                visible={touched.password}
+              />
+              <AppTextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                icon="account-outline"
+                placeholder="Username"
+                onBlur={() => setFieldTouched("username")}
+                onChangeText={handleChange("username")}
+                textContentType="username"
+              />
+              <ErrorMessage
+                error={errors.username}
+                visible={touched.username}
+              />
+              <View style={styles.divider}></View>
+              <AuthButton title="Create Now" onPress={handleSubmit} />
+            </>
+          )}
+        </Formik>
 
-        <Text style={styles.body}>Phone Number</Text>
-        <PhoneNumberInput
-          phoneNumber={phoneNumber}
-          setPhoneNumber={setPhoneNumber}
-        />
-        <AuthButton title="Create Now" onPress={() => validateInputs()} />
         <View style={styles.register}>
           <Text>I have an account? </Text>
           <Text
@@ -66,7 +146,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 20,
   },
   header: {
     marginTop: 10,
@@ -79,14 +159,14 @@ const styles = StyleSheet.create({
     color: "#A1A1A1",
   },
   imageContainer: {
-    marginTop: 30,
-    marginBottom: 20,
+    marginTop: 20,
+    marginBottom: 10,
     alignItems: "center",
     justifyContent: "center",
   },
   image: {
-    width: 230,
-    height: 170,
+    width: 150,
+    height: 150,
   },
   username: {
     width: "100%",
@@ -107,5 +187,8 @@ const styles = StyleSheet.create({
   registerNow: {
     color: "#FF7B7B",
     fontWeight: "bold",
+  },
+  divider: {
+    marginBottom: 10,
   },
 });

@@ -2,18 +2,34 @@ import { StyleSheet, Text, View, Image } from "react-native";
 import React, { useState } from "react";
 import Layout from "../../components/Auth/Layout";
 import AuthButton from "../../components/Auth/AuthButton";
-import PhoneNumberInput from "../../components/Auth/PhoneNumberInput";
-import { isValidNumber } from "react-native-phone-number-input";
+import { Formik } from "formik";
+import * as yup from "yup";
+import firebase from "firebase";
+
+import AppText from "../../components/common/AppText";
+import AppTextInput from "../../components/common/AppTextInput";
+import ErrorMessage from "../../components/common/ErrorMessage";
 
 const Login = ({ navigation }) => {
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const validationSchema = yup.object().shape({
+    email: yup.string().required().email().label("Email"),
+    password: yup.string().required().min(4).label("Password"),
+  });
 
-  const sendCode = () => {
-    const isValid = isValidNumber(phoneNumber);
-    if (isValid) {
-      navigation.navigate("NumberVerification");
-    } else {
-      alert("Error: Provide a valid phone number");
+  const sendCode = (values) => {
+    if (values) {
+      // alert(values.email + values.password);
+      const { email, password } = values;
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password)
+        .then((result) => {
+          //console.log(result);
+        })
+        .catch((error) => {
+          //console.log(error);
+          alert(error);
+        });
     }
   };
 
@@ -28,13 +44,52 @@ const Login = ({ navigation }) => {
             source={require("../../assets/loginIMG.png")}
           />
         </View>
-        <Text style={styles.body}>Phone Number</Text>
 
-        <PhoneNumberInput
-          phoneNumber={phoneNumber}
-          setPhoneNumber={setPhoneNumber}
-        />
-        <AuthButton title="Request Code" onPress={() => sendCode()} />
+        <Formik
+          initialValues={{ email: "", password: "" }}
+          onSubmit={(values) => sendCode(values)}
+          validationSchema={validationSchema}
+        >
+          {({
+            handleChange,
+            handleSubmit,
+            errors,
+            setFieldTouched,
+            touched,
+          }) => (
+            <>
+              <AppTextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                icon="email"
+                keyboardType="email-address"
+                onBlur={() => setFieldTouched("email")}
+                onChangeText={handleChange("email")}
+                placeholder="Email"
+                textContentType="emailAddress"
+              />
+              <ErrorMessage error={errors.email} visible={touched.email} />
+              <AppTextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                icon="lock"
+                placeholder="Password"
+                onBlur={() => setFieldTouched("password")}
+                onChangeText={handleChange("password")}
+                secureTextEntry={true}
+                textContentType="password"
+              />
+              <ErrorMessage
+                error={errors.password}
+                visible={touched.password}
+              />
+              <View>
+                <AppText style={styles.text}> Forgot password? </AppText>
+              </View>
+              <AuthButton title="Request Code" onPress={handleSubmit} />
+            </>
+          )}
+        </Formik>
         <View style={styles.register}>
           <Text>Not registered yet? </Text>
           <Text
@@ -55,7 +110,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 10,
   },
   header: {
     marginTop: 20,
@@ -74,8 +129,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   image: {
-    width: 170,
-    height: 170,
+    width: 150,
+    height: 150,
   },
   register: {
     marginTop: 50,
@@ -86,5 +141,11 @@ const styles = StyleSheet.create({
   registerNow: {
     color: "#FF7B7B",
     fontWeight: "bold",
+  },
+  text: {
+    textAlign: "left",
+    color: "#6e6969",
+    marginVertical: 10,
+    fontSize: 15,
   },
 });

@@ -5,20 +5,55 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ScreenLayout from "../../components/common/ScreenLayout";
+import firebase from "firebase";
+require("firebase/firestore");
+require("firebase/firebase-storage");
+
 const Profile = () => {
-  const [username, setUsername] = useState("Blaze_man");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [newUsername, setNewUsername] = useState("");
 
   const changeUsername = () => {
-    if (newUsername.length > 1) {
-      setUsername(newUsername);
+    const { uid } = firebase.auth().currentUser;
+    // console.log(uid);
+    if (newUsername.length > 3) {
+      const db = firebase.firestore();
+      db.collection("users")
+        .doc(uid)
+        .update({
+          username: newUsername,
+        })
+        .then(() => {
+          console.log("Document successfully updated!");
+        })
+        .catch((error) => {
+          console.error("Error updating document: ", error);
+        });
+
       setNewUsername("");
-    } else {
-      alert("username too short");
     }
   };
+
+  const getUsername = () => {
+    const { uid } = firebase.auth().currentUser;
+    // console.log(uid);
+    const db = firebase.firestore();
+    db.collection("users")
+      .doc(uid)
+      .onSnapshot((doc) => {
+        // console.log("Current data: ", doc.data());
+        const { email, username } = doc.data();
+        setUsername(username);
+        setEmail(email);
+      });
+  };
+
+  useEffect(() => {
+    getUsername();
+  }, []);
 
   return (
     <ScreenLayout style={styles.screen}>
@@ -42,6 +77,15 @@ const Profile = () => {
       <View style={styles.saveContainer}>
         <TouchableOpacity style={styles.save} onPress={() => changeUsername()}>
           <Text style={styles.buttonText}> Save Changes </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={[styles.saveContainer, { marginTop: 50 }]}>
+        <TouchableOpacity
+          style={[styles.save, { backgroundColor: "tomato" }]}
+          onPress={() => firebase.auth().signOut()}
+        >
+          <Text style={styles.buttonText}> Logout </Text>
         </TouchableOpacity>
       </View>
     </ScreenLayout>

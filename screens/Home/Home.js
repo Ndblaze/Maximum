@@ -1,66 +1,60 @@
-import { StyleSheet, Text, View, Image } from "react-native";
-import React, { useState } from "react";
+import { StyleSheet, Text, View, Image, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
 import Constants from "expo-constants";
-import { useNavigation } from "@react-navigation/native";
+import firebase from "firebase";
+require("firebase/firestore");
+require("firebase/firebase-storage");
 
-const Sections = ({ sectionsArray }) => {
-  const navigation = useNavigation();
-
-  return (
-    <View style={styles.division}>
-      {sectionsArray.map((room) => (
-        <View key={room.title}>
-          <View style={styles.divisionTitleContainer}>
-            <Text style={styles.divisionTitle}> {room.title} </Text>
-          </View>
-          {room.chartRoomTitle.map((chats) => (
-            <Text
-              key={chats}
-              onPress={() =>
-                navigation.navigate("Messaging", { title: "#" + "  " + chats })
-              }
-              style={styles.divisionRoom}
-            >
-              # {"   "}
-              {chats}
-            </Text>
-          ))}
-        </View>
-      ))}
-    </View>
-  );
-};
+import Sections from "../../components/common/Sections";
 
 const Home = ({ navigation }) => {
   //Admin room list details
-  const [adminRoomList, setAdminRoomList] = useState([
-    {
-      title: "Mentions",
-      nameDB: "announcements",
-      chartRoomTitle: ["announcements"],
-    },
-  ]);
-  const [mattersRoomList, setMattersRoomList] = useState([
-    {
-      title: "Matters-on-groung",
-      nameDB: "MattersOnGround",
-      chartRoomTitle: ["boys-are-scum"],
-    },
-  ]);
-  const [hotSpotRoomList, setHotSpotRoomList] = useState([
-    {
-      title: "Hot-spots",
-      nameDB: "HotSpots",
-      chartRoomTitle: [
-        "Bejaia",
-        "Boumerdes",
-        "Oran",
-        "Tizi",
-        "Constantine",
-        "Mostaganem",
-      ],
-    },
-  ]);
+  const [adminRoomList, setAdminRoomList] = useState({ title: "Mentions" });
+  const [mattersRoomList, setMattersRoomList] = useState({
+    title: "Matters-on-ground",
+  });
+  const [hotSpotRoomList, setHotSpotRoomList] = useState({
+    title: "Hot-spots",
+  });
+
+  useEffect(() => {
+    const db = firebase.firestore();
+    db.collection("chats").onSnapshot((querySnapshot) => {
+      let admin = { title: "", chatRoomTitle: [] };
+      let matters = { title: "", chatRoomTitle: [] };
+      let hot = { title: "", chatRoomTitle: [] };
+
+      querySnapshot.forEach((doc) => {
+        const { title, chatName } = doc.data();
+
+        if (title === "Mentions") {
+          admin.chatRoomTitle.push({ chatName: chatName, docID: doc.id });
+          admin = {
+            title: title,
+            chatRoomTitle: admin.chatRoomTitle,
+          };
+        }
+        if (title === "Matters-on-ground") {
+          matters.chatRoomTitle.push({ chatName: chatName, docID: doc.id });
+          matters = {
+            title: title,
+            chatRoomTitle: matters.chatRoomTitle,
+          };
+        }
+        if (title === "Hot-spots") {
+          hot.chatRoomTitle.push({ chatName: chatName, docID: doc.id });
+          hot = {
+            title: title,
+            chatRoomTitle: hot.chatRoomTitle,
+          };
+        }
+      });
+      // console.log(hot);
+      setAdminRoomList(admin);
+      setMattersRoomList(matters);
+      setHotSpotRoomList(hot);
+    });
+  }, []);
 
   return (
     <View style={styles.screen}>
@@ -72,11 +66,11 @@ const Home = ({ navigation }) => {
         <Text style={styles.max}>max-im-um</Text>
       </View>
 
-      <View style={styles.mainContent}>
-        <Sections sectionsArray={adminRoomList} />
-        <Sections sectionsArray={mattersRoomList} />
-        <Sections sectionsArray={hotSpotRoomList} />
-      </View>
+      <ScrollView style={styles.mainContent}>
+        <Sections sectionsObject={adminRoomList} />
+        <Sections sectionsObject={mattersRoomList} />
+        <Sections sectionsObject={hotSpotRoomList} />
+      </ScrollView>
     </View>
   );
 };
@@ -107,27 +101,9 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   mainContent: {
-    marginTop: 40,
+    marginTop: 20,
+    paddingTop: 20,
     paddingLeft: 10,
     paddingRight: 10,
-  },
-  division: {
-    marginBottom: 20,
-    paddingBottom: 20,
-    borderWidth: 1,
-    borderColor: "#fff",
-    borderBottomColor: "#F5F5F5",
-  },
-  divisionTitleContainer: {},
-  divisionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  divisionRoom: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#c4c4c4",
-    paddingTop: 20,
-    paddingLeft: 30,
   },
 });
