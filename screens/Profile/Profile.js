@@ -17,38 +17,29 @@ const Profile = () => {
   const [newUsername, setNewUsername] = useState("");
 
   const changeUsername = () => {
-    const { uid } = firebase.auth().currentUser;
-    // console.log(uid);
     if (newUsername.length > 3) {
-      const db = firebase.firestore();
-      db.collection("users")
-        .doc(uid)
-        .update({
-          username: newUsername,
+      const user = firebase.auth().currentUser;
+      console.log(user);
+      user
+        .updateProfile({
+          displayName: newUsername,
         })
-        .then(() => {
-          console.log("Document successfully updated!");
+        .then((result) => {
+          getUsername();
+          setNewUsername("");
+          // console.log("profile");
         })
         .catch((error) => {
-          console.error("Error updating document: ", error);
+          // An error occurred
         });
-
-      setNewUsername("");
     }
   };
 
   const getUsername = () => {
-    const { uid } = firebase.auth().currentUser;
+    const { uid, displayName, email } = firebase.auth().currentUser;
     // console.log(uid);
-    const db = firebase.firestore();
-    db.collection("users")
-      .doc(uid)
-      .onSnapshot((doc) => {
-        // console.log("Current data: ", doc.data());
-        const { email, username } = doc.data();
-        setUsername(username);
-        setEmail(email);
-      });
+    setUsername(displayName);
+    setEmail(email);
   };
 
   useEffect(() => {

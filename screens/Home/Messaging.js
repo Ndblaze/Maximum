@@ -12,7 +12,6 @@ require("firebase/firestore");
 
 const Messaging = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
-  const [username, setUsername] = useState("");
 
   const renderBubble = (props) => {
     return (
@@ -51,33 +50,21 @@ const Messaging = ({ navigation, route }) => {
 
   //console.log(route.params);
 
-  const getUsername = () => {
-    const { uid } = firebase.auth().currentUser;
-    // console.log(uid);
-    const db = firebase.firestore();
-    db.collection("users")
-      .doc(uid)
-      .onSnapshot((doc) => {
-        const { username } = doc.data();
-        // console.log(username);
-        setUsername(username);
-      });
-  };
-
   const sendMessage = (chat) => {
+    const { displayName, uid } = firebase.auth().currentUser;
     // console.log(chat);
-    getUsername();
     const db = firebase.firestore();
     db.collection("chats")
       .doc(route.params.docID)
       .collection("messages")
       .add({
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         _id: chat._id,
         text: chat.text,
         createdAt: chat.createdAt.toString(),
         user: {
-          _id: firebase.auth().currentUser.uid,
-          name: username,
+          _id: uid,
+          name: displayName,
         },
       })
       .then((docRef) => {
@@ -93,6 +80,7 @@ const Messaging = ({ navigation, route }) => {
     db.collection("chats")
       .doc(route.params.docID)
       .collection("messages")
+      .orderBy("timestamp", "desc")
       .onSnapshot((querySnapshot) => {
         const data = querySnapshot.docs.map((doc) => {
           return doc.data();
@@ -116,7 +104,7 @@ const Messaging = ({ navigation, route }) => {
       onSend={(messages) => onSend(messages)}
       user={{
         _id: firebase.auth().currentUser.uid,
-      }}
+      }} 
       renderBubble={renderBubble}
       alwaysShowSend
       renderSend={renderSend}

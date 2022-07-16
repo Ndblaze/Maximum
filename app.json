@@ -1,7 +1,9 @@
 {
   "expo": {
-    "name": "MaxApp",
+    "name": "Max App",
     "slug": "MaxApp",
+    "privacy": "public",
+    "description": "A chat app for the latest matters-on-ground",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +16,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
+    "assetBundlePatterns": [ 
       "**/*"
     ],
     "ios": {

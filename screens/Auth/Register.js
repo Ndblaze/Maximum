@@ -18,21 +18,20 @@ const Register = ({ navigation }) => {
     username: yup.string().required().min(4).label("Username"),
   });
 
-  const profileInfo = (email, username, userID) => {
-    //console.log(email + username + userID);
-    const db = firebase.firestore();
-    db.collection("users")
-      .doc(userID)
-      .set({
-        email: email,
-        userID: userID,
-        username: username,
+  const UserInfo = (username) => {
+    //console.log(username);
+    //updating profile DisplayName
+    const user = firebase.auth().currentUser;
+    user
+      .updateProfile({
+        displayName: username,
       })
-      .then(() => {
-        console.log("Document successfully written!");
+      .then((result) => {
+        // console.log("profile");
       })
       .catch((error) => {
-        console.error("Error writing document: ", error);
+        // An error occurred
+        // ...
       });
   };
 
@@ -45,8 +44,7 @@ const Register = ({ navigation }) => {
         .createUserWithEmailAndPassword(email, password)
         .then((result) => {
           // console.log(result);
-          profileInfo(email, username, result.user.uid);
-          //store email and username at the user collection
+          UserInfo(username);
         })
         .catch((error) => {
           alert(error);
