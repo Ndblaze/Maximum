@@ -1,5 +1,12 @@
-import { StyleSheet, Text, Alert, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  Alert,
+  View,
+  TouchableWithoutFeedback,
+} from "react-native";
 import React from "react";
+import { Badge } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import firebase from "firebase";
@@ -38,7 +45,7 @@ const Sections = ({ sectionsObject }) => {
         </View>
         {sectionsObject.chatRoomTitle &&
           sectionsObject.chatRoomTitle.map(({ chatName, docID }) => (
-            <Text
+            <TouchableWithoutFeedback
               key={docID}
               onPress={() =>
                 navigation.navigate("Messaging", {
@@ -46,11 +53,15 @@ const Sections = ({ sectionsObject }) => {
                   docID: docID,
                 })
               }
-              style={styles.divisionRoom}
             >
-              # {"   "}
-              {chatName}
-            </Text>
+              <View style={styles.chatTitle}>
+                <Text style={styles.divisionRoom}>
+                  # {"   "}
+                  {chatName}
+                </Text>
+                <Badge>20</Badge>
+              </View>
+            </TouchableWithoutFeedback>
           ))}
         {sectionsObject.title === "Matters-on-ground" && (
           <Text
@@ -106,5 +117,11 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingLeft: 24,
     fontStyle: "italic",
+  },
+  chatTitle: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 });

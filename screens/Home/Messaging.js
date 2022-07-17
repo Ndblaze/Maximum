@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, ImageBackground, StyleSheet, Text, View } from "react-native";
 import React, {
   useState,
   useCallback,
@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { GiftedChat, Bubble, Send } from "react-native-gifted-chat";
 import { MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
+import { Linking } from "react-native";
 import firebase from "firebase";
 require("firebase/firestore");
 
@@ -20,6 +21,8 @@ const Messaging = ({ navigation, route }) => {
         wrapperStyle={{
           right: {
             backgroundColor: "#8CB8B9",
+            opacity: 0.7,
+            //paddingVertical: 0
           },
         }}
         textStyle={{
@@ -46,6 +49,19 @@ const Messaging = ({ navigation, route }) => {
   };
   const scrollToBottomComponent = () => {
     return <FontAwesome name="angle-double-down" size={22} color={"#333"} />;
+  };
+
+  //call a highlighted number
+  const callNumber = (phoneNumber) => {
+    Linking.canOpenURL(phoneNumber)
+      .then((supported) => {
+        if (!supported) {
+          Alert.alert("Phone number is not available");
+        } else {
+          return Linking.openURL(phoneNumber);
+        }
+      })
+      .catch((err) => console.log(err));
   };
 
   //console.log(route.params);
@@ -99,18 +115,42 @@ const Messaging = ({ navigation, route }) => {
   }, []);
 
   return (
+    <ImageBackground
+       source={require("../../assets/chatWallpaper.png")}
+       style={{flex: 1}}
+    >
     <GiftedChat
       messages={messages && messages}
       onSend={(messages) => onSend(messages)}
       user={{
         _id: firebase.auth().currentUser.uid,
-      }} 
+      }}
       renderBubble={renderBubble}
       alwaysShowSend
+      renderUsernameOnMessage
+      // onLongPress={() => Alert.alert("bubble pressed")}
       renderSend={renderSend}
       scrollToBottom
       scrollToBottomComponent={scrollToBottomComponent}
+      parsePatterns={(linkStyle) => [
+        {
+          type: "phone",
+          style: linkStyle,
+          onPress: (phoneNumber) => callNumber(`tel:${phoneNumber}`),
+        },
+        {
+          pattern: /#(\w+)/,
+          style: { ...linkStyle, ...styles.hashTag },
+          onPress: () => Alert.alert("Hash-Tag"),
+        },
+        {
+          type: "url",
+          style: { ...linkStyle, ...styles.hashTag },
+          //onPress: (url) => openURL(url),
+        },
+      ]}
     />
+    </ImageBackground>
   );
 };
 
@@ -120,5 +160,10 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
+  },
+  hashTag: {
+    color: "tomato",
+    fontStyle: "italic",
+    textDecorationLine: "underline",
   },
 });
