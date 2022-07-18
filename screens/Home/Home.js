@@ -8,6 +8,8 @@ require("firebase/firebase-storage");
 import Sections from "../../components/common/Sections";
 
 const Home = ({ navigation }) => {
+  //loading data for
+  const [loading, setLoading] = useState(true);
   //Admin room list details
   const [adminRoomList, setAdminRoomList] = useState({ title: "Mentions" });
   const [mattersRoomList, setMattersRoomList] = useState({
@@ -17,10 +19,8 @@ const Home = ({ navigation }) => {
     title: "Hot-spots",
   });
 
-  const [unreadMessagesList, setUnreadMessagesList] = useState([]);
-  const [messageLastRead, setMessageLastRead] = useState([]);
-
   useEffect(() => {
+    setLoading(true);
     const db = firebase.firestore();
     const unsubscribe = db.collection("chats").onSnapshot((querySnapshot) => {
       let admin = { title: "", chatRoomTitle: [] };
@@ -29,23 +29,34 @@ const Home = ({ navigation }) => {
 
       querySnapshot.forEach((doc) => {
         const { title, chatName } = doc.data();
-
         if (title === "Mentions") {
-          admin.chatRoomTitle.push({ chatName: chatName, docID: doc.id });
+          admin.chatRoomTitle.push({
+            chatName: chatName,
+            docID: doc.id,
+            unread: 3,
+          });
           admin = {
             title: title,
             chatRoomTitle: admin.chatRoomTitle,
           };
         }
         if (title === "Matters-on-ground") {
-          matters.chatRoomTitle.push({ chatName: chatName, docID: doc.id });
+          matters.chatRoomTitle.push({
+            chatName: chatName,
+            docID: doc.id,
+            unread: 5,
+          });
           matters = {
             title: title,
             chatRoomTitle: matters.chatRoomTitle,
           };
         }
         if (title === "Hot-spots") {
-          hot.chatRoomTitle.push({ chatName: chatName, docID: doc.id });
+          hot.chatRoomTitle.push({
+            chatName: chatName,
+            docID: doc.id,
+            unread: 6,
+          });
           hot = {
             title: title,
             chatRoomTitle: hot.chatRoomTitle,
@@ -56,66 +67,10 @@ const Home = ({ navigation }) => {
       setAdminRoomList(admin);
       setMattersRoomList(matters);
       setHotSpotRoomList(hot);
+      setLoading(false);
     });
-
     return unsubscribe;
   }, []);
-
-  //useEffect to get the last read for messages
-  useEffect(() => {
-    const { uid } = firebase.auth().currentUser;
-
-    const db = firebase.firestore();
-    const unsubscribe = db
-      .collection("unreadMessages")
-      .doc(uid)
-      .collection("chat-rooms")
-      .onSnapshot((querySnapshot) => {
-        const data = querySnapshot.docs.map((doc) => {
-          const { chatName, lastRead, docID } = doc.data();
-          const seconds = lastRead?.seconds;
-          return { chatName, docID, seconds };
-        });
-
-        setMessageLastRead(data);
-      });
-
-    return unsubscribe;
-  }, []);
-
-  //get the last 20 messages and compare with the last time opened
-  useEffect(() => {
-    if (messageLastRead) {
-      let data = [];
-      const db = firebase.firestore();
-      messageLastRead.forEach((unread) => {
-        //console.log(unread);
-        db.collection("chats")
-          .doc(unread.docID)
-          .collection("messages")
-          .orderBy("timestamp", "asc")
-          .limit(20)
-          .onSnapshot((querySnapshot) => {
-            let obj = {};
-            querySnapshot.docs.map((doc, index) => {
-              const realDate = doc.data().timestamp?.seconds;
-              if (realDate * 1000 > unread.seconds * 1000) {
-                obj = { ...unread, length: index + 1 };
-                return;
-              }
-            });
-            //conditional seting if object is not empty
-            {
-              obj.hasOwnProperty("length") && data.push(obj);
-            }
-            //set the unread list
-            setUnreadMessagesList(data);
-           // console.log(data);
-
-          });
-      });
-    }
-  }, [messageLastRead]);
 
   return (
     <View style={styles.screen}>
@@ -127,11 +82,13 @@ const Home = ({ navigation }) => {
         <Text style={styles.max}>max-im-um</Text>
       </View>
 
-      <ScrollView style={styles.mainContent}>
-        <Sections sectionsObject={adminRoomList} unreadMessagesList={unreadMessagesList} />
-        <Sections sectionsObject={mattersRoomList} unreadMessagesList={unreadMessagesList} />
-        <Sections sectionsObject={hotSpotRoomList} unreadMessagesList={unreadMessagesList} />
-      </ScrollView>
+      {!loading && (
+        <ScrollView style={styles.mainContent}>
+          <Sections sectionsObject={adminRoomList} />
+          <Sections sectionsObject={mattersRoomList} />
+          <Sections sectionsObject={hotSpotRoomList} />
+        </ScrollView>
+      )}
     </View>
   );
 };

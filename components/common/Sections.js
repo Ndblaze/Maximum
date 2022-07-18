@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import firebase from "firebase";
 require("firebase/firestore");
 
-const Sections = ({ sectionsObject, unreadMessagesList }) => {
+const Sections = ({ sectionsObject }) => {
   const navigation = useNavigation();
 
   const addNewMatter = (topic) => {
@@ -72,8 +72,6 @@ const Sections = ({ sectionsObject, unreadMessagesList }) => {
     updateLastRead(chatName, docID);
   };
 
-  console.log(unreadMessagesList[0]);
-
   return (
     <View style={styles.division}>
       <View key={sectionsObject.title}>
@@ -81,7 +79,7 @@ const Sections = ({ sectionsObject, unreadMessagesList }) => {
           <Text style={styles.divisionTitle}> {sectionsObject.title} </Text>
         </View>
         {sectionsObject.chatRoomTitle &&
-          sectionsObject.chatRoomTitle.map(({ chatName, docID }) => (
+          sectionsObject.chatRoomTitle.map(({ chatName, docID, unread }) => (
             <TouchableWithoutFeedback
               key={docID}
               onPress={() => handleChatPress(chatName, docID)}
@@ -91,12 +89,8 @@ const Sections = ({ sectionsObject, unreadMessagesList }) => {
                   # {"   "}
                   {chatName}
                 </Text>
-                {unreadMessagesList?.map((obj) => {
-                  //console.log(obj.length)
-                  // {
-                  //   true ? (<Badge>2</Badge>) : " ";
-                  // }
-                })}
+
+                <Badge>{unread}</Badge>
               </View>
             </TouchableWithoutFeedback>
           ))}

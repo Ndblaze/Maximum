@@ -69,28 +69,6 @@ const Messaging = ({ navigation, route }) => {
     });
   };
 
-  //update last red chat after send message
-  const updateLastRead = (docID) => {
-    const { uid } = firebase.auth().currentUser;
-    const db = firebase.firestore();
-    const unsubscribe = db
-      .collection("unreadMessages")
-      .doc(uid)
-      .collection("chat-rooms")
-      .doc(docID)
-      .update({
-        lastRead: firebase.firestore.FieldValue.serverTimestamp(),
-      })
-      .then(() => {
-        //console.log("Document successfully written!");
-      })
-      .catch((error) => {
-        //console.error("Error writing document: ", error);
-      });
-
-    return unsubscribe;
-  };
-
   const sendMessage = (chat) => {
     const { displayName, uid } = firebase.auth().currentUser;
     // console.log(chat);
@@ -109,7 +87,6 @@ const Messaging = ({ navigation, route }) => {
         },
       })
       .then((docRef) => {
-        updateLastRead(route.params.docID);
         //console.log("Document written with ID: ", docRef.id);
       })
       .catch((error) => {
