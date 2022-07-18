@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import firebase from "firebase";
 require("firebase/firestore");
 
-const Sections = ({ sectionsObject }) => {
+const Sections = ({ sectionsObject, unreadMessagesList }) => {
   const navigation = useNavigation();
 
   const addNewMatter = (topic) => {
@@ -37,6 +37,43 @@ const Sections = ({ sectionsObject }) => {
       });
   };
 
+  //update last red chat
+  const updateLastRead = (chatName, docID) => {
+    const { uid } = firebase.auth().currentUser;
+    const db = firebase.firestore();
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .doc(uid)
+      .collection("chat-rooms")
+      .doc(docID)
+      .set({
+        chatName: chatName,
+        docID: docID,
+        lastRead: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => {
+        //console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        //console.error("Error writing document: ", error);
+      });
+
+    return unsubscribe;
+  };
+
+  //action when you click on a chat
+  const handleChatPress = (chatName, docID) => {
+    navigation.navigate("Messaging", {
+      title: "#" + "  " + chatName,
+      docID: docID,
+    });
+
+    //update lastRead
+    updateLastRead(chatName, docID);
+  };
+
+  console.log(unreadMessagesList[0]);
+
   return (
     <View style={styles.division}>
       <View key={sectionsObject.title}>
@@ -47,19 +84,19 @@ const Sections = ({ sectionsObject }) => {
           sectionsObject.chatRoomTitle.map(({ chatName, docID }) => (
             <TouchableWithoutFeedback
               key={docID}
-              onPress={() =>
-                navigation.navigate("Messaging", {
-                  title: "#" + "  " + chatName,
-                  docID: docID,
-                })
-              }
+              onPress={() => handleChatPress(chatName, docID)}
             >
               <View style={styles.chatTitle}>
                 <Text style={styles.divisionRoom}>
                   # {"   "}
                   {chatName}
                 </Text>
-                <Badge>20</Badge>
+                {unreadMessagesList?.map((obj) => {
+                  //console.log(obj.length)
+                  // {
+                  //   true ? (<Badge>2</Badge>) : " ";
+                  // }
+                })}
               </View>
             </TouchableWithoutFeedback>
           ))}

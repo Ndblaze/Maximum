@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 
@@ -9,12 +9,17 @@ import Security from "../screens/Security/Security";
 const Tap = createBottomTabNavigator();
 
 export const AppNavigator = () => {
+  const [messagingUI, setMessagingUI] = useState(false);
+
   return (
     <Tap.Navigator>
       <Tap.Screen
         name="Home"
-        component={HomeNavigator}
+        component={() => <HomeNavigator setMessagingUI={setMessagingUI} />}
         options={({ route }) => ({
+          tabBarStyle: {
+            display: messagingUI && 'none'
+          },
           tabBarIcon: ({ size, color }) => (
             <Ionicons name="home" size={size} color={color} />
           ),

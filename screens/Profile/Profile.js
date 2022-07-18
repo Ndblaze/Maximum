@@ -19,7 +19,7 @@ const Profile = () => {
   const changeUsername = () => {
     if (newUsername.length > 3) {
       const user = firebase.auth().currentUser;
-      console.log(user);
+      //console.log(user);
       user
         .updateProfile({
           displayName: newUsername,

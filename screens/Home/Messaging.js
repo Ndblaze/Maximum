@@ -1,11 +1,7 @@
 import { Alert, ImageBackground, StyleSheet, Text, View } from "react-native";
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-} from "react";
+import React, { useState, useCallback, useLayoutEffect } from "react";
 import { GiftedChat, Bubble, Send } from "react-native-gifted-chat";
+import * as Clipboard from "expo-clipboard";
 import { MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
 import { Linking } from "react-native";
 import firebase from "firebase";
@@ -13,6 +9,8 @@ require("firebase/firestore");
 
 const Messaging = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
+  const [orderLimit, setOrderLimit] = useState(50);
+  const [loading, setLoading] = useState(false);
 
   const renderBubble = (props) => {
     return (
@@ -64,7 +62,34 @@ const Messaging = ({ navigation, route }) => {
       .catch((err) => console.log(err));
   };
 
-  //console.log(route.params);
+  const copyUserNameWhenPressAvatar = async () => {
+    const username = firebase.auth().currentUser.displayName;
+    await Clipboard.setStringAsync(`#${username}`).then(() => {
+      alert(`username copied: "${username}"`);
+    });
+  };
+
+  //update last red chat after send message
+  const updateLastRead = (docID) => {
+    const { uid } = firebase.auth().currentUser;
+    const db = firebase.firestore();
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .doc(uid)
+      .collection("chat-rooms")
+      .doc(docID)
+      .update({
+        lastRead: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => {
+        //console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        //console.error("Error writing document: ", error);
+      });
+
+    return unsubscribe;
+  };
 
   const sendMessage = (chat) => {
     const { displayName, uid } = firebase.auth().currentUser;
@@ -84,6 +109,7 @@ const Messaging = ({ navigation, route }) => {
         },
       })
       .then((docRef) => {
+        updateLastRead(route.params.docID);
         //console.log("Document written with ID: ", docRef.id);
       })
       .catch((error) => {
@@ -91,12 +117,22 @@ const Messaging = ({ navigation, route }) => {
       });
   };
 
+  //   const { creationTime, lastSignInTime } =
+  //   firebase.auth().currentUser.metadata;
+  // console.log(creationTime, lastSignInTime);
+
   useLayoutEffect(() => {
+    getMessages();
+  }, []);
+
+  const getMessages = () => {
     const db = firebase.firestore();
-    db.collection("chats")
+    const unsubscribe = db
+      .collection("chats")
       .doc(route.params.docID)
       .collection("messages")
       .orderBy("timestamp", "desc")
+      .limit(orderLimit)
       .onSnapshot((querySnapshot) => {
         const data = querySnapshot.docs.map((doc) => {
           return doc.data();
@@ -105,7 +141,10 @@ const Messaging = ({ navigation, route }) => {
         // console.log(data);
         setMessages(data);
       });
-  }, []);
+    setLoading(false);
+
+    return unsubscribe;
+  };
 
   const onSend = useCallback((messages = []) => {
     sendMessage(messages[0]);
@@ -116,40 +155,53 @@ const Messaging = ({ navigation, route }) => {
 
   return (
     <ImageBackground
-       source={require("../../assets/chatWallpaper.png")}
-       style={{flex: 1}}
-    >
-    <GiftedChat
-      messages={messages && messages}
-      onSend={(messages) => onSend(messages)}
-      user={{
-        _id: firebase.auth().currentUser.uid,
+      source={{
+        uri: "https://firebasestorage.googleapis.com/v0/b/max-chat-app-bbd6f.appspot.com/o/chatBackground.png?alt=media&token=9149225d-e482-4d26-9aea-c2b94a2cac82",
       }}
-      renderBubble={renderBubble}
-      alwaysShowSend
-      renderUsernameOnMessage
-      // onLongPress={() => Alert.alert("bubble pressed")}
-      renderSend={renderSend}
-      scrollToBottom
-      scrollToBottomComponent={scrollToBottomComponent}
-      parsePatterns={(linkStyle) => [
-        {
-          type: "phone",
-          style: linkStyle,
-          onPress: (phoneNumber) => callNumber(`tel:${phoneNumber}`),
-        },
-        {
-          pattern: /#(\w+)/,
-          style: { ...linkStyle, ...styles.hashTag },
-          onPress: () => Alert.alert("Hash-Tag"),
-        },
-        {
-          type: "url",
-          style: { ...linkStyle, ...styles.hashTag },
-          //onPress: (url) => openURL(url),
-        },
-      ]}
-    />
+      style={{ flex: 1 }}
+    >
+      <GiftedChat
+        messages={messages && messages}
+        onSend={(messages) => onSend(messages)}
+        user={{
+          _id: firebase.auth().currentUser.uid,
+        }}
+        renderBubble={renderBubble}
+        alwaysShowSend
+        renderUsernameOnMessage
+        bottomOffset={40}
+        onPressAvatar={() => copyUserNameWhenPressAvatar()}
+        textInputProps={{ marginRight: 20 }}
+        minInputToolbarHeight={50}
+        onLoadEarlier={() => {
+          setLoading(true);
+          setOrderLimit(orderLimit * 2);
+          getMessages();
+        }}
+        isLoadingEarlier={loading}
+        renderSend={renderSend}
+        scrollToBottom
+        scrollToBottomComponent={scrollToBottomComponent}
+        loadEarlier
+        parsePatterns={(linkStyle) => [
+          {
+            type: "phone",
+            style: linkStyle,
+            onPress: (phoneNumber) => callNumber(`tel:${phoneNumber}`),
+          },
+          {
+            pattern: /#(\w+)/,
+            style: { ...linkStyle, ...styles.hashTag },
+            onPress: () => Alert.alert("Hash-Tag"),
+          },
+          {
+            type: "url",
+            style: { ...linkStyle, ...styles.hashTag },
+            //onPress: (url) => openURL(url),
+          },
+        ]}
+      />
+      <View style={styles.bottomDivission}></View>
     </ImageBackground>
   );
 };
@@ -165,5 +217,10 @@ const styles = StyleSheet.create({
     color: "tomato",
     fontStyle: "italic",
     textDecorationLine: "underline",
+  },
+  bottomDivission: {
+    backgroundColor: "#fff",
+    height: 35,
+    width: "100%",
   },
 });

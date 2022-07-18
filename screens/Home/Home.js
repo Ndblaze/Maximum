@@ -17,9 +17,12 @@ const Home = ({ navigation }) => {
     title: "Hot-spots",
   });
 
+  const [unreadMessagesList, setUnreadMessagesList] = useState([]);
+  const [messageLastRead, setMessageLastRead] = useState([]);
+
   useEffect(() => {
     const db = firebase.firestore();
-    db.collection("chats").onSnapshot((querySnapshot) => {
+    const unsubscribe = db.collection("chats").onSnapshot((querySnapshot) => {
       let admin = { title: "", chatRoomTitle: [] };
       let matters = { title: "", chatRoomTitle: [] };
       let hot = { title: "", chatRoomTitle: [] };
@@ -54,7 +57,65 @@ const Home = ({ navigation }) => {
       setMattersRoomList(matters);
       setHotSpotRoomList(hot);
     });
+
+    return unsubscribe;
   }, []);
+
+  //useEffect to get the last read for messages
+  useEffect(() => {
+    const { uid } = firebase.auth().currentUser;
+
+    const db = firebase.firestore();
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .doc(uid)
+      .collection("chat-rooms")
+      .onSnapshot((querySnapshot) => {
+        const data = querySnapshot.docs.map((doc) => {
+          const { chatName, lastRead, docID } = doc.data();
+          const seconds = lastRead?.seconds;
+          return { chatName, docID, seconds };
+        });
+
+        setMessageLastRead(data);
+      });
+
+    return unsubscribe;
+  }, []);
+
+  //get the last 20 messages and compare with the last time opened
+  useEffect(() => {
+    if (messageLastRead) {
+      let data = [];
+      const db = firebase.firestore();
+      messageLastRead.forEach((unread) => {
+        //console.log(unread);
+        db.collection("chats")
+          .doc(unread.docID)
+          .collection("messages")
+          .orderBy("timestamp", "asc")
+          .limit(20)
+          .onSnapshot((querySnapshot) => {
+            let obj = {};
+            querySnapshot.docs.map((doc, index) => {
+              const realDate = doc.data().timestamp?.seconds;
+              if (realDate * 1000 > unread.seconds * 1000) {
+                obj = { ...unread, length: index + 1 };
+                return;
+              }
+            });
+            //conditional seting if object is not empty
+            {
+              obj.hasOwnProperty("length") && data.push(obj);
+            }
+            //set the unread list
+            setUnreadMessagesList(data);
+           // console.log(data);
+
+          });
+      });
+    }
+  }, [messageLastRead]);
 
   return (
     <View style={styles.screen}>
@@ -67,15 +128,15 @@ const Home = ({ navigation }) => {
       </View>
 
       <ScrollView style={styles.mainContent}>
-        <Sections sectionsObject={adminRoomList} />
-        <Sections sectionsObject={mattersRoomList} />
-        <Sections sectionsObject={hotSpotRoomList} />
+        <Sections sectionsObject={adminRoomList} unreadMessagesList={unreadMessagesList} />
+        <Sections sectionsObject={mattersRoomList} unreadMessagesList={unreadMessagesList} />
+        <Sections sectionsObject={hotSpotRoomList} unreadMessagesList={unreadMessagesList} />
       </ScrollView>
     </View>
   );
 };
 
-export default Home; 
+export default Home;
 
 const styles = StyleSheet.create({
   screen: {
