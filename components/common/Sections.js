@@ -5,12 +5,70 @@ import {
   View,
   TouchableWithoutFeedback,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Badge } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import firebase from "firebase";
 require("firebase/firestore");
+
+const UnreadMessages = ({ roomID }) => {
+  const [unread, setUnread] = useState(0);
+
+  //get last read chat
+  const getLastRead = (roomID) => {
+    const { uid } = firebase.auth().currentUser;
+    const db = firebase.firestore();
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .doc(uid)
+      .collection("chat-rooms")
+      .doc(roomID)
+      .onSnapshot((doc) => {
+        const lastRead = doc.data().lastRead;
+        //console.log(lastRead?.valueOf());
+        getLastMessages(roomID, lastRead?.valueOf());
+      });
+
+    return unsubscribe;
+  };
+
+  //getLastMessages twenty messages
+  const getLastMessages = (roomID, lastRead) => {
+    const db = firebase.firestore();
+    const unsubscribe = db
+      .collection("chats")
+      .doc(roomID)
+      .collection("messages")
+      .orderBy("timestamp", "desc")
+      .limit(20)
+      .onSnapshot((querySnapshot) => {
+        const data = querySnapshot.docs.map((doc) => {
+          return doc.data().timestamp;
+        });
+        // console.log(data);
+        calculateNumberOfUnread(data, lastRead);
+      });
+
+    return unsubscribe;
+  };
+
+  //calculate Number Of Unread messages
+  const calculateNumberOfUnread = (twentyMessages, lastRead) => {
+    const numberOfUnread = twentyMessages.filter((message) => {
+      return message?.valueOf() > lastRead;
+    });
+
+    //console.log(numberOfUnread.length);
+    setUnread(numberOfUnread.length);
+  };
+
+  useEffect(() => {
+    getLastRead(roomID);
+  }, []);
+
+  return <Badge>{unread}</Badge>;
+};
 
 const Sections = ({ sectionsObject }) => {
   const navigation = useNavigation();
@@ -79,7 +137,7 @@ const Sections = ({ sectionsObject }) => {
           <Text style={styles.divisionTitle}> {sectionsObject.title} </Text>
         </View>
         {sectionsObject.chatRoomTitle &&
-          sectionsObject.chatRoomTitle.map(({ chatName, docID, unread }) => (
+          sectionsObject.chatRoomTitle.map(({ chatName, docID }) => (
             <TouchableWithoutFeedback
               key={docID}
               onPress={() => handleChatPress(chatName, docID)}
@@ -89,8 +147,7 @@ const Sections = ({ sectionsObject }) => {
                   # {"   "}
                   {chatName}
                 </Text>
-
-                <Badge>{unread}</Badge>
+                {docID && <UnreadMessages roomID={docID} />}
               </View>
             </TouchableWithoutFeedback>
           ))}

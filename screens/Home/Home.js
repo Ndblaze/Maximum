@@ -33,7 +33,6 @@ const Home = ({ navigation }) => {
           admin.chatRoomTitle.push({
             chatName: chatName,
             docID: doc.id,
-            unread: 3,
           });
           admin = {
             title: title,
@@ -44,7 +43,6 @@ const Home = ({ navigation }) => {
           matters.chatRoomTitle.push({
             chatName: chatName,
             docID: doc.id,
-            unread: 5,
           });
           matters = {
             title: title,
@@ -55,7 +53,6 @@ const Home = ({ navigation }) => {
           hot.chatRoomTitle.push({
             chatName: chatName,
             docID: doc.id,
-            unread: 6,
           });
           hot = {
             title: title,
