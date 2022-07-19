@@ -69,6 +69,28 @@ const Messaging = ({ navigation, route }) => {
     });
   };
 
+  // >>> Precaution purposes >>>>>
+  //this is just to add a field inside so as to make this document appear in query snapshots
+  const initializeMyUnreadMessages = () => {
+    const { uid } = firebase.auth().currentUser;
+    const db = firebase.firestore();
+
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .doc(uid)
+      .set({
+        docID: uid,
+      })
+      .then(() => {
+        //console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        //console.error("Error writing document: ", error);
+      });
+
+    return unsubscribe;
+  };
+
   //update last red chat
   const updateLastRead = (docID) => {
     const { uid } = firebase.auth().currentUser;
@@ -122,6 +144,7 @@ const Messaging = ({ navigation, route }) => {
   // console.log(creationTime, lastSignInTime);
 
   useLayoutEffect(() => {
+    initializeMyUnreadMessages();
     getMessages();
   }, []);
 

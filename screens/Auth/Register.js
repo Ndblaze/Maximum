@@ -31,13 +31,34 @@ const Register = ({ navigation }) => {
           //console.log(doc.data());
           if (doc.data()) {
             const { chatName, title } = doc.data();
-            setLastRead(chatName, doc.id, userID);
+            initializeMyUnreadMessages(chatName, doc.id, userID);
           }
         });
       })
       .catch((error) => {
         console.log("Error getting documents: ", error);
       });
+    return unsubscribe;
+  };
+
+  //this is just to add a field inside so as to make this document appear in query snapshots
+  const initializeMyUnreadMessages = (chatName, docID, userID) => {
+    const db = firebase.firestore();
+
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .doc(userID)
+      .set({
+        docID: userID,
+      })
+      .then(() => {
+        //console.log("Document successfully written!");
+        setLastRead(chatName, docID, userID);
+      })
+      .catch((error) => {
+        //console.error("Error writing document: ", error);
+      });
+
     return unsubscribe;
   };
 

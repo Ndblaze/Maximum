@@ -106,7 +106,7 @@ const Sections = ({ sectionsObject }) => {
       })
       .then((docRef) => {
         //console.log(docRef.id);
-        getAllUnreadMessageDoc(topic, docRef.id)
+        getAllUnreadMessageDoc(topic, docRef.id);
       })
       .catch((error) => {
         //console.error("Error adding document: ", error);
@@ -114,21 +114,22 @@ const Sections = ({ sectionsObject }) => {
   };
 
   //get all the chat room uid and call the setLastRead function
-  const getAllUnreadMessageDoc = (chatName, chatID) => {
+  const getAllUnreadMessageDoc = (topic, chatID) => {
     const db = firebase.firestore();
+
     const unsubscribe = db
       .collection("unreadMessages")
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          console.log('called');
-          console.log(doc.id);
-         // setLastRead(doc.id, chatName, chatID);
+          //console.log(doc.id)
+          setLastRead(doc.id, topic, chatID)
         });
       })
       .catch((error) => {
-        console.log("Error getting documents: ", error);
+        //console.error("Error writing document: ", error);
       });
+
     return unsubscribe;
   };
 
