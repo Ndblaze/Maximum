@@ -5,16 +5,24 @@ import { NavigationContainer } from "@react-navigation/native";
 import AuthNavigator from "./navigation/AuthNavigator";
 import { AppNavigator } from "./navigation/AppNavigator";
 import navigationTheme from "./navigation/navigationTheme";
+import {
+  API_KEY,
+  AUTH_DOMAIN,
+  PROJECT_ID,
+  STORAGE_BUCKET,
+  MESSAGE_SENDER_ID,
+  APP_ID,
+} from "./config/env";
 
 import * as firebase from "firebase";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCGNUVymtspSY1cIx0diKE3_Ow9ysBfb-U",
-  authDomain: "max-chat-app-bbd6f.firebaseapp.com",
-  projectId: "max-chat-app-bbd6f",
-  storageBucket: "max-chat-app-bbd6f.appspot.com",
-  messagingSenderId: "277610712584",
-  appId: "1:277610712584:web:ba72755db7809885e3cbbd",
+  apiKey: API_KEY,
+  authDomain: AUTH_DOMAIN,
+  projectId: PROJECT_ID,
+  storageBucket: STORAGE_BUCKET,
+  messagingSenderId: MESSAGE_SENDER_ID,
+  appId: APP_ID,
 };
 
 if (firebase.apps.length === 0) {
