@@ -18,7 +18,54 @@ const Register = ({ navigation }) => {
     username: yup.string().required().min(4).label("Username"),
   });
 
-  const UserInfo = (username) => {
+  //get all the chat room uid and call the setLastRead function
+  const getAllChats = (userID) => {
+    // console.log(uid);
+
+    const db = firebase.firestore();
+    const unsubscribe = db
+      .collection("chats")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          //console.log(doc.data());
+          if (doc.data()) {
+            const { chatName, title } = doc.data();
+            setLastRead(chatName, doc.id, userID);
+          }
+        });
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+    return unsubscribe;
+  };
+
+  //set last red chat after register
+  const setLastRead = (chatName, docID, userID) => {
+    const db = firebase.firestore();
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .doc(userID)
+      .collection("chat-rooms")
+      .doc(docID)
+      .set({
+        chatName: chatName,
+        docID: docID,
+        lastRead: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => {
+        //console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        //console.error("Error writing document: ", error);
+      });
+
+    return unsubscribe;
+  };
+
+  //update profile display name
+  const updateProfile = (username) => {
     //console.log(username);
     //updating profile DisplayName
     const user = firebase.auth().currentUser;
@@ -28,6 +75,7 @@ const Register = ({ navigation }) => {
       })
       .then((result) => {
         // console.log("profile");
+        getAllChats(user.uid);
       })
       .catch((error) => {
         // An error occurred
@@ -35,7 +83,7 @@ const Register = ({ navigation }) => {
       });
   };
 
-  const validateInputs = (values) => {
+  const registerNewUser = (values) => {
     if (values) {
       // alert(values.email + values.password + values.username);
       const { email, password, username } = values;
@@ -43,8 +91,8 @@ const Register = ({ navigation }) => {
         .auth()
         .createUserWithEmailAndPassword(email, password)
         .then((result) => {
-          // console.log(result);
-          UserInfo(username);
+          //  console.log(result);
+          updateProfile(username);
         })
         .catch((error) => {
           alert(error);
@@ -69,7 +117,7 @@ const Register = ({ navigation }) => {
 
         <Formik
           initialValues={{ email: "", password: "", username: "" }}
-          onSubmit={(values) => validateInputs(values)}
+          onSubmit={(values) => registerNewUser(values)}
           validationSchema={validationSchema}
         >
           {({

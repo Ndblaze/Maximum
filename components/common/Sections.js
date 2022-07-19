@@ -13,7 +13,10 @@ import firebase from "firebase";
 require("firebase/firestore");
 
 const UnreadMessages = ({ roomID }) => {
-  const [unread, setUnread] = useState(0);
+  const [unread, setUnread] = useState(20);
+
+  //load page before showing contents
+  const [load, setLoad] = useState(false);
 
   //get last read chat
   const getLastRead = (roomID) => {
@@ -25,9 +28,12 @@ const UnreadMessages = ({ roomID }) => {
       .collection("chat-rooms")
       .doc(roomID)
       .onSnapshot((doc) => {
-        const lastRead = doc.data().lastRead;
-        //console.log(lastRead?.valueOf());
-        getLastMessages(roomID, lastRead?.valueOf());
+        //check if doc data exists befor calling the other functions
+        if (doc.data()) {
+          const lastRead = doc.data().lastRead;
+          //console.log(lastRead?.valueOf());
+          getLastMessages(roomID, lastRead?.valueOf());
+        }
       });
 
     return unsubscribe;
@@ -61,13 +67,24 @@ const UnreadMessages = ({ roomID }) => {
 
     //console.log(numberOfUnread.length);
     setUnread(numberOfUnread.length);
+    setLoad(true);
   };
 
   useEffect(() => {
     getLastRead(roomID);
   }, []);
 
-  return <Badge>{unread}</Badge>;
+  return (
+    <>
+      {load && (
+        <Badge
+          size={17}
+          children={unread >= 20 ? `${unread}+` : unread}
+          visible={unread == 0 ? false : true}
+        />
+      )}
+    </>
+  );
 };
 
 const Sections = ({ sectionsObject }) => {
@@ -88,14 +105,58 @@ const Sections = ({ sectionsObject }) => {
         chatName: topic,
       })
       .then((docRef) => {
-        //console.log("Document written with ID: ", docRef.id);
+        //console.log(docRef.id);
+        getAllUnreadMessageDoc(topic, docRef.id)
       })
       .catch((error) => {
         //console.error("Error adding document: ", error);
       });
   };
 
-  //update last red chat
+  //get all the chat room uid and call the setLastRead function
+  const getAllUnreadMessageDoc = (chatName, chatID) => {
+    const db = firebase.firestore();
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          console.log('called');
+          console.log(doc.id);
+         // setLastRead(doc.id, chatName, chatID);
+        });
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+    return unsubscribe;
+  };
+
+  //set last red chat to all unreadMessage doc after Adding a new topic(matter)
+  const setLastRead = (unreadMessageDocID, chatName, chatID) => {
+    const db = firebase.firestore();
+
+    const unsubscribe = db
+      .collection("unreadMessages")
+      .doc(unreadMessageDocID)
+      .collection("chat-rooms")
+      .doc(chatID)
+      .set({
+        chatName: chatName,
+        docID: chatID,
+        lastRead: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => {
+        //console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        //console.error("Error writing document: ", error);
+      });
+
+    return unsubscribe;
+  };
+
+  //Re-set last red chat after clicking on a particular chat
   const updateLastRead = (chatName, docID) => {
     const { uid } = firebase.auth().currentUser;
     const db = firebase.firestore();

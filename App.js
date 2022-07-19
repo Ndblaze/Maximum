@@ -24,13 +24,18 @@ if (firebase.apps.length === 0) {
 export default function App() {
   const [user, setUser] = useState(false);
 
+  //load page before showing contents
+  const [load, setLoad] = useState(false);
+
   useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         setUser(true);
+        setLoad(true);
         // console.log("innnnnn");
       } else {
         setUser(false);
+        setLoad(true);
         // console.log("outttt");
       }
     });
@@ -38,16 +43,18 @@ export default function App() {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      {/* <AuthNavigator /> */}
-      {user ? <AppNavigator /> : <AuthNavigator />}
-      {/* <AppNavigator /> */}
+      {load && (
+        <View style={styles.container}>
+          {user ? <AppNavigator /> : <AuthNavigator />}
+        </View>
+      )}
     </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
+    flex: 1,
     // backgroundColor: '#fff',
     // alignItems: 'center',
     // justifyContent: 'center',

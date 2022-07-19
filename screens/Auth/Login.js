@@ -46,7 +46,7 @@ const Login = ({ navigation }) => {
         </View>
 
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ email: "", password: "" }} 
           onSubmit={(values) => sendCode(values)}
           validationSchema={validationSchema}
         >
