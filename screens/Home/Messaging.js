@@ -117,7 +117,8 @@ const Messaging = ({ navigation, route }) => {
     const { displayName, uid } = firebase.auth().currentUser;
     // console.log(chat);
     const db = firebase.firestore();
-    db.collection("chats")
+    const unsubscribe = db
+      .collection("chats")
       .doc(route.params.docID)
       .collection("messages")
       .add({
@@ -137,6 +138,8 @@ const Messaging = ({ navigation, route }) => {
       .catch((error) => {
         //console.error("Error adding document: ", error);
       });
+
+    return unsubscribe;
   };
 
   //   const { creationTime, lastSignInTime } =
@@ -214,12 +217,12 @@ const Messaging = ({ navigation, route }) => {
           },
           {
             pattern: /#(\w+)/,
-            style: { ...linkStyle, ...styles.hashTag },
+            style: styles.hashTag,
             onPress: () => Alert.alert("Hash-Tag"),
           },
           {
             type: "url",
-            style: { ...linkStyle, ...styles.hashTag },
+            style: styles.hashTag,
             //onPress: (url) => openURL(url),
           },
         ]}

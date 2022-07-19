@@ -6,23 +6,13 @@ import Messaging from "../screens/Home/Messaging";
 
 const Stack = createNativeStackNavigator();
 
-export const HomeNavigator = ({ setMessagingUI }) => {
-  //remove and seet tab Bottoms
-  const checkName = (name) => {
-    if (name === "Messaging") {
-      setMessagingUI(true);
-      return;
-    }
-    setMessagingUI(false);
-  };
-
+export const HomeNavigator = () => {
   return (
     <Stack.Navigator mode="modal">
       <Stack.Screen
         name="Room"
         component={Home}
         options={({ route }) => {
-          checkName(route.name);
           return {
             headerShown: false,
           };
@@ -32,7 +22,6 @@ export const HomeNavigator = ({ setMessagingUI }) => {
         name="Messaging"
         component={Messaging}
         options={({ route }) => {
-          checkName(route.name);
           return {
             headerBackTitleVisible: false,
             title: route.params.title,

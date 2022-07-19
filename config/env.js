@@ -7,7 +7,7 @@ import {
   appId,
 } from "@env";
  
-console.log(apiKey)    
+//console.log(apiKey)    
 
 const API_KEY = apiKey
 const AUTH_DOMAIN = authDomain

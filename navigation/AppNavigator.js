@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 import Profile from "../screens/Profile/Profile";
 import HomeNavigator from "./HomeNavigator";
@@ -9,16 +10,19 @@ import Security from "../screens/Security/Security";
 const Tap = createBottomTabNavigator();
 
 export const AppNavigator = () => {
-  const [messagingUI, setMessagingUI] = useState(false);
+  const getName = (route) => {
+    const routeName = getFocusedRouteNameFromRoute(route);
+    return routeName;
+  };
 
   return (
     <Tap.Navigator>
       <Tap.Screen
         name="Home"
-        component={() => <HomeNavigator setMessagingUI={setMessagingUI} />}
+        component={HomeNavigator}
         options={({ route }) => ({
           tabBarStyle: {
-            display: messagingUI && 'none'
+            display: getName(route) === "Messaging" && "none",
           },
           tabBarIcon: ({ size, color }) => (
             <Ionicons name="home" size={size} color={color} />

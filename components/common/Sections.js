@@ -99,7 +99,8 @@ const Sections = ({ sectionsObject }) => {
     }
 
     const db = firebase.firestore();
-    db.collection("chats")
+    const unsubscribe = db
+      .collection("chats")
       .add({
         title: "Matters-on-ground",
         chatName: topic,
@@ -111,6 +112,8 @@ const Sections = ({ sectionsObject }) => {
       .catch((error) => {
         //console.error("Error adding document: ", error);
       });
+
+    return unsubscribe;
   };
 
   //get all the chat room uid and call the setLastRead function
@@ -123,7 +126,7 @@ const Sections = ({ sectionsObject }) => {
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
           //console.log(doc.id)
-          setLastRead(doc.id, topic, chatID)
+          setLastRead(doc.id, topic, chatID);
         });
       })
       .catch((error) => {
