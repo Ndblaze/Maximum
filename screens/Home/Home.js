@@ -1,11 +1,13 @@
 import { StyleSheet, Text, View, Image, ScrollView } from "react-native";
 import React, { useEffect, useState } from "react";
 import Constants from "expo-constants";
+import { useIsFocused } from "@react-navigation/native";
 import firebase from "firebase";
 require("firebase/firestore");
 require("firebase/firebase-storage");
 
 import Sections from "../../components/common/Sections";
+import { updateCurrentScreen } from "../../firebase/useFirebase";
 
 const Home = ({ navigation }) => {
   //loading data for
@@ -18,6 +20,8 @@ const Home = ({ navigation }) => {
   const [hotSpotRoomList, setHotSpotRoomList] = useState({
     title: "Hot-spots",
   });
+
+  const focused = useIsFocused();
 
   useEffect(() => {
     setLoading(true);
@@ -66,8 +70,16 @@ const Home = ({ navigation }) => {
       setHotSpotRoomList(hot);
       setLoading(false);
     });
+
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    const { uid } = firebase.auth().currentUser;
+    if (focused) {
+      updateCurrentScreen(uid, "Room");
+    }
+  }, [focused]);
 
   return (
     <View style={styles.screen}>

@@ -11,15 +11,14 @@ import HomeNavigator from "./HomeNavigator";
 import Security from "../screens/Security/Security";
 
 //notification functions
-import {
-  registerForPushNotificationsAsync,
-  handleNotificationResponse,
-} from "../manageNotifications/notification";
+import { registerForPushNotificationsAsync } from "../manageNotifications/notification";
 
 const Tap = createBottomTabNavigator();
 
 export const AppNavigator = () => {
   const [notificationListner, setNoftificationListner] = useState();
+  const lastNotification = Notifications.useLastNotificationResponse();
+
   //set notification token to firebase
   const setNotificationToken = () => {
     const { uid } = firebase.auth().currentUser;
@@ -28,6 +27,7 @@ export const AppNavigator = () => {
         {
           userID: uid,
           notificationToken: token,
+          userCurrentScreen: "none",
         },
         { merge: true }
       );
@@ -39,6 +39,22 @@ export const AppNavigator = () => {
   const handleNotification = (notification) => {
     //console.log(notification);
     setNoftificationListner({ notification: notification });
+  };
+
+  //function call when u tap on a notification
+  const handleNotificationResponse = (response) => {
+    const {
+      notification: {
+        request: {
+          content: { data },
+        },
+      },
+    } = response;
+
+    if (lastNotification) {
+      Linking.openURL(data);
+    }
+    // console.log(data);
   };
 
   useEffect(() => {
@@ -56,7 +72,7 @@ export const AppNavigator = () => {
   };
 
   return (
-    <Tap.Navigator>
+    <Tap.Navigator initialRouteName="Home">
       <Tap.Screen
         name="Home"
         component={HomeNavigator}

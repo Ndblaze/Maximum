@@ -6,15 +6,21 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 import ScreenLayout from "../../components/common/ScreenLayout";
 import firebase from "firebase";
 require("firebase/firestore");
 require("firebase/firebase-storage");
 
+//use firebase hooks
+import { updateCurrentScreen } from "../../firebase/useFirebase";
+
 const Profile = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [newUsername, setNewUsername] = useState("");
+
+  const focused = useIsFocused();
 
   const changeUsername = () => {
     if (newUsername.length > 3) {
@@ -45,6 +51,13 @@ const Profile = () => {
   useEffect(() => {
     getUsername();
   }, []);
+
+  useEffect(() => {
+    const { uid } = firebase.auth().currentUser;
+    if (focused) {
+      updateCurrentScreen(uid, "Profile");
+    }
+  }, [focused]);
 
   return (
     <ScreenLayout style={styles.screen}>

@@ -1,5 +1,10 @@
 import { Alert, ImageBackground, StyleSheet, Text, View } from "react-native";
-import React, { useState, useCallback, useLayoutEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useLayoutEffect,
+  useEffect,
+} from "react";
 import { GiftedChat, Bubble, Send } from "react-native-gifted-chat";
 import * as Clipboard from "expo-clipboard";
 import { MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
@@ -10,6 +15,67 @@ require("firebase/firestore");
 //notification functions
 import { sendPushNotification } from "../../manageNotifications/notification";
 
+//firebase hooks
+import { updateCurrentScreen } from "../../firebase/useFirebase";
+
+const renderBubble = (props) => {
+  return (
+    <Bubble
+      {...props}
+      wrapperStyle={{
+        right: {
+          backgroundColor: "#8CB8B9",
+          opacity: 0.7,
+          //paddingVertical: 0
+        },
+      }}
+      textStyle={{
+        right: {
+          color: "#fff",
+        },
+      }}
+    />
+  );
+};
+
+const renderSend = (props) => {
+  return (
+    <Send {...props}>
+      <View>
+        <MaterialCommunityIcons
+          name="send-circle"
+          style={{ marginBottom: 5, marginRight: 5 }}
+          size={32}
+          color={"#8CB8B9"}
+        />
+      </View>
+    </Send>
+  );
+};
+const scrollToBottomComponent = () => {
+  return <FontAwesome name="angle-double-down" size={22} color={"#333"} />;
+};
+
+//call a highlighted number
+const callNumber = (phoneNumber) => {
+  Linking.canOpenURL(phoneNumber)
+    .then((supported) => {
+      if (!supported) {
+        Alert.alert("Phone number is not available");
+      } else {
+        return Linking.openURL(phoneNumber);
+      }
+    })
+    .catch((err) => console.log(err));
+};
+
+const copyUserNameWhenPressAvatar = async () => {
+  const username = firebase.auth().currentUser.displayName;
+  await Clipboard.setStringAsync(`#${username}`).then(() => {
+    alert(`username copied: "${username}"`);
+  });
+};
+
 const Messaging = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
   const [orderLimit, setOrderLimit] = useState(50);
@@ -17,67 +83,9 @@ const Messaging = ({ navigation, route }) => {
 
   //console.log(route)
 
-  const renderBubble = (props) => {
-    return (
-      <Bubble
-        {...props}
-        wrapperStyle={{
-          right: {
-            backgroundColor: "#8CB8B9",
-            opacity: 0.7,
-            //paddingVertical: 0
-          },
-        }}
-        textStyle={{
-          right: {
-            color: "#fff",
-          },
-        }}
-      />
-    );
-  };
-  const renderSend = (props) => {
-    return (
-      <Send {...props}>
-        <View>
-          <MaterialCommunityIcons
-            name="send-circle"
-            style={{ marginBottom: 5, marginRight: 5 }}
-            size={32}
-            color={"#8CB8B9"}
-          />
-        </View>
-      </Send>
-    );
-  };
-  const scrollToBottomComponent = () => {
-    return <FontAwesome name="angle-double-down" size={22} color={"#333"} />;
-  };
-
-  //call a highlighted number
-  const callNumber = (phoneNumber) => {
-    Linking.canOpenURL(phoneNumber)
-      .then((supported) => {
-        if (!supported) {
-          Alert.alert("Phone number is not available");
-        } else {
-          return Linking.openURL(phoneNumber);
-        }
-      })
-      .catch((err) => console.log(err));
-  };
-
-  const copyUserNameWhenPressAvatar = async () => {
-    const username = firebase.auth().currentUser.displayName;
-    await Clipboard.setStringAsync(`#${username}`).then(() => {
-      alert(`username copied: "${username}"`);
-    });
-  };
-
   // >>> Precaution purposes >>>>>
   //this is just to add a field inside so as to make this document appear in query snapshots
-  const initializeMyUnreadMessages = () => {
-    const { uid } = firebase.auth().currentUser;
+  const initializeMyUnreadMessages = (uid) => {
     const db = firebase.firestore();
 
     const unsubscribe = db
@@ -147,12 +155,14 @@ const Messaging = ({ navigation, route }) => {
     return unsubscribe;
   };
 
-  //   const { creationTime, lastSignInTime } =
-  //   firebase.auth().currentUser.metadata;
-  // console.log(creationTime, lastSignInTime);
+  useEffect(() => {
+    const { uid } = firebase.auth().currentUser;
+    updateCurrentScreen(uid, route.params.docID);
+  }, []);
 
   useLayoutEffect(() => {
-    initializeMyUnreadMessages();
+    const { uid } = firebase.auth().currentUser;
+    initializeMyUnreadMessages(uid);
     getMessages();
   }, []);
 
@@ -182,7 +192,8 @@ const Messaging = ({ navigation, route }) => {
     //add if uid dont send push notification
     const unsubscribe = firebase.firestore();
     unsubscribe
-      .collection("users")
+      .collection("notifications")
+      //.where("userCurrentScreen", "!=", route.params.docID)
       .get()
       .then((querySnapshot) => {
         let numberOfDocs = 0;
@@ -198,7 +209,8 @@ const Messaging = ({ navigation, route }) => {
             batch.push({
               to: doc.data().notificationToken,
               subtitle: displayName,
-              data: { navigateTo: "Room" },
+              sound: 'default',
+              data: { navigateTo: "Messaging" },
               title: route.params.title,
               body: message.text,
             });

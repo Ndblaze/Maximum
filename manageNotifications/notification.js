@@ -1,13 +1,13 @@
 import * as Notifications from "expo-notifications";
 import Device from "expo-device";
-import { Platform } from "react-native";
+import { Linking, Platform } from "react-native";
 //import { Expo } from 'expo-server-sdk';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
-    shouldSetBadge: true,
+    shouldSetBadge: false,
   }),
 });
 
@@ -93,15 +93,3 @@ const confirmationOfPushNotifucation = async (ids) => {
     });
 };
 
-//function call when u tap on a notification
-export const handleNotificationResponse = (response) => {
-  //destructuring the response to get the rron to naviaget when clicked on the notification
-  const {
-    notification: {
-      request: {
-        content: { data },
-      },
-    },
-  } = response;
-  console.log(data);
-};
