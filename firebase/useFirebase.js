@@ -8,10 +8,11 @@ export const updateCurrentScreen = (uid, docName) => {
     .firestore()
     .collection("notifications")
     .doc(uid)
-    .update({
-      userCurrentScreen: docName,
-    });
+    .set(
+      {
+        userCurrentScreen: docName,
+      },
+      { merge: true }
+    );
   return unsubscribe;
 };
-
-

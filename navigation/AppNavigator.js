@@ -23,15 +23,20 @@ export const AppNavigator = () => {
   const setNotificationToken = () => {
     const { uid } = firebase.auth().currentUser;
     registerForPushNotificationsAsync().then((token) => {
-      firebase.firestore().collection("notifications").doc(uid).set(
-        {
-          userID: uid,
-          notificationToken: token,
-          userCurrentScreen: "none",
-        },
-        { merge: true }
-      );
+      const unsubscribe = firebase
+        .firestore()
+        .collection("notifications")
+        .doc(uid)
+        .set(
+          {
+            userID: uid,
+            notificationToken: token,
+            userCurrentScreen: "none",
+          },
+          { merge: true }
+        );
       //  console.log(token);
+      return unsubscribe;
     });
   };
 
@@ -51,6 +56,7 @@ export const AppNavigator = () => {
       },
     } = response;
 
+    //sueposed to navigate to a specific screen (fuctionality not fixed yet)
     if (lastNotification) {
       Linking.openURL(data);
     }

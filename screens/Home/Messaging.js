@@ -193,7 +193,7 @@ const Messaging = ({ navigation, route }) => {
     const unsubscribe = firebase.firestore();
     unsubscribe
       .collection("notifications")
-      //.where("userCurrentScreen", "!=", route.params.docID)
+      .where("userCurrentScreen", "!=", route.params.docID)
       .get()
       .then((querySnapshot) => {
         let numberOfDocs = 0;
@@ -209,7 +209,7 @@ const Messaging = ({ navigation, route }) => {
             batch.push({
               to: doc.data().notificationToken,
               subtitle: displayName,
-              sound: 'default',
+              sound: "default",
               data: { navigateTo: "Messaging" },
               title: route.params.title,
               body: message.text,
