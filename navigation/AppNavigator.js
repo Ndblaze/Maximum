@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import * as Notifications from "expo-notifications";
 import firebase from "firebase";
 require("firebase/firestore");
 
@@ -10,12 +11,15 @@ import HomeNavigator from "./HomeNavigator";
 import Security from "../screens/Security/Security";
 
 //notification functions
-import { registerForPushNotificationsAsync } from "../manageNotifications/notification";
+import {
+  registerForPushNotificationsAsync,
+  handleNotificationResponse,
+} from "../manageNotifications/notification";
 
 const Tap = createBottomTabNavigator();
 
 export const AppNavigator = () => {
-  
+  const [notificationListner, setNoftificationListner] = useState();
   //set notification token to firebase
   const setNotificationToken = () => {
     const { uid } = firebase.auth().currentUser;
@@ -31,8 +35,19 @@ export const AppNavigator = () => {
     });
   };
 
+  //function call when u receive a notification
+  const handleNotification = (notification) => {
+    //console.log(notification);
+    setNoftificationListner({ notification: notification });
+  };
+
   useEffect(() => {
     setNotificationToken();
+
+    Notifications.addNotificationReceivedListener(handleNotification);
+    Notifications.addNotificationResponseReceivedListener(
+      handleNotificationResponse
+    );
   }, []);
 
   const getName = (route) => {

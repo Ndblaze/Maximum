@@ -7,10 +7,15 @@ import { Linking } from "react-native";
 import firebase from "firebase";
 require("firebase/firestore");
 
+//notification functions
+import { sendPushNotification } from "../../manageNotifications/notification";
+
 const Messaging = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
   const [orderLimit, setOrderLimit] = useState(50);
   const [loading, setLoading] = useState(false);
+
+  //console.log(route)
 
   const renderBubble = (props) => {
     return (
@@ -172,8 +177,48 @@ const Messaging = ({ navigation, route }) => {
     return unsubscribe;
   };
 
+  const notifyUsers = (message) => {
+    const { uid, displayName } = firebase.auth().currentUser;
+    //add if uid dont send push notification
+    const unsubscribe = firebase.firestore();
+    unsubscribe
+      .collection("users")
+      .get()
+      .then((querySnapshot) => {
+        let numberOfDocs = 0;
+        let batch = [];
+        querySnapshot.forEach((doc) => {
+          numberOfDocs++;
+          if (numberOfDocs === 90) {
+            sendPushNotification(batch);
+            batch = [];
+            numberOfDocs = 0;
+          } else {
+            //console.log(doc.data().notificationToken);
+            batch.push({
+              to: doc.data().notificationToken,
+              subtitle: displayName,
+              data: { navigateTo: "Room" },
+              title: route.params.title,
+              body: message.text,
+            });
+          }
+        });
+        //sending the remaining not up to 90 // if number of docs not up to 90
+        if (numberOfDocs > 0) {
+          sendPushNotification(batch);
+          batch = [];
+          numberOfDocs = 0;
+        }
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+  };
+
   const onSend = useCallback((messages = []) => {
     sendMessage(messages[0]);
+    notifyUsers(messages[0]);
     setMessages((previousMessages) =>
       GiftedChat.append(previousMessages, messages)
     );

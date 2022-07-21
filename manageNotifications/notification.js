@@ -6,11 +6,18 @@ import { Platform } from "react-native";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
   }),
 });
- 
+
+//static option for HTTP notification sending
+const headers = {
+  Accept: "application/json",
+  "Accept-Encoding": "gzip, deflate",
+  "Content-Type": "application/json",
+};
+
 export async function registerForPushNotificationsAsync() {
   let token;
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -38,4 +45,63 @@ export async function registerForPushNotificationsAsync() {
   return token;
 }
 
+//send notification to an array of tokens
+export const sendPushNotification = async (batch) => {
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: headers,
+    body: JSON.stringify(batch),
+  })
+    .then((response) => response.json())
+    .then(({ data }) => {
+      if (data) {
+        //console.log(data);
+        const ids = data.map((res) => {
+          if (res.id) {
+            const id = res.id;
+            return id;
+          }
+        });
 
+        {
+          ids ? confirmationOfPushNotifucation(ids) : "";
+        }
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+//follow up request to make sure our notification was send succefully
+
+const confirmationOfPushNotifucation = async (ids) => {
+  //console.log(ids)
+  await fetch("https://exp.host/--/api/v2/push/getReceipts", {
+    method: "POST",
+    headers: headers,
+    body: JSON.stringify({
+      ids: ids,
+    }),
+  })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      //.log(responseJson);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+//function call when u tap on a notification
+export const handleNotificationResponse = (response) => {
+  //destructuring the response to get the rron to naviaget when clicked on the notification
+  const {
+    notification: {
+      request: {
+        content: { data },
+      },
+    },
+  } = response;
+  console.log(data);
+};
