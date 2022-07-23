@@ -12,6 +12,9 @@ import { Ionicons } from "@expo/vector-icons";
 import firebase from "firebase";
 require("firebase/firestore");
 
+//useFirebase hooks
+import { addNewUnapprovedMatter } from "../../firebase/useFirebase";
+
 const UnreadMessages = ({ roomID }) => {
   const [unread, setUnread] = useState(20);
 
@@ -71,7 +74,7 @@ const UnreadMessages = ({ roomID }) => {
   };
 
   useEffect(() => {
-    getLastRead(roomID);
+    return getLastRead(roomID);
   }, []);
 
   return (
@@ -88,77 +91,8 @@ const UnreadMessages = ({ roomID }) => {
 };
 
 const Sections = ({ sectionsObject }) => {
+  const [currentUser, setCurrentUser] = useState({});
   const navigation = useNavigation();
-
-  const addNewMatter = (topic) => {
-    if (topic.trim().length <= 5 || topic.trim().length >= 20) {
-      alert(
-        "topic too short or too long, please provid a meaningfull name for your topic"
-      );
-      return;
-    }
-
-    const db = firebase.firestore();
-    const unsubscribe = db
-      .collection("chats")
-      .add({
-        title: "Matters-on-ground",
-        chatName: topic,
-      })
-      .then((docRef) => {
-        //console.log(docRef.id);
-        getAllUnreadMessageDoc(topic, docRef.id);
-      })
-      .catch((error) => {
-        //console.error("Error adding document: ", error);
-      });
-
-    return unsubscribe;
-  };
-
-  //get all the chat room uid and call the setLastRead function
-  const getAllUnreadMessageDoc = (topic, chatID) => {
-    const db = firebase.firestore();
-
-    const unsubscribe = db
-      .collection("unreadMessages")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          //console.log(doc.id)
-          setLastRead(doc.id, topic, chatID);
-        });
-      })
-      .catch((error) => {
-        //console.error("Error writing document: ", error);
-      });
-
-    return unsubscribe;
-  };
-
-  //set last red chat to all unreadMessage doc after Adding a new topic(matter)
-  const setLastRead = (unreadMessageDocID, chatName, chatID) => {
-    const db = firebase.firestore();
-
-    const unsubscribe = db
-      .collection("unreadMessages")
-      .doc(unreadMessageDocID)
-      .collection("chat-rooms")
-      .doc(chatID)
-      .set({
-        chatName: chatName,
-        docID: chatID,
-        lastRead: firebase.firestore.FieldValue.serverTimestamp(),
-      })
-      .then(() => {
-        //console.log("Document successfully written!");
-      })
-      .catch((error) => {
-        //console.error("Error writing document: ", error);
-      });
-
-    return unsubscribe;
-  };
 
   //Re-set last red chat after clicking on a particular chat
   const updateLastRead = (chatName, docID) => {
@@ -195,6 +129,11 @@ const Sections = ({ sectionsObject }) => {
     updateLastRead(chatName, docID);
   };
 
+  useEffect(() => {
+    const user = firebase.auth().currentUser;
+    setCurrentUser(user);
+  }, []);
+
   return (
     <View style={styles.division}>
       <View key={sectionsObject.title}>
@@ -227,7 +166,7 @@ const Sections = ({ sectionsObject }) => {
                 },
                 {
                   text: "Submit",
-                  onPress: (text) => addNewMatter(text),
+                  onPress: (text) => addNewUnapprovedMatter(text, currentUser),
                 },
               ])
             }
@@ -247,8 +186,7 @@ const styles = StyleSheet.create({
   division: {
     marginBottom: 20,
     paddingBottom: 20,
-    borderWidth: 1,
-    borderColor: "#fff",
+    borderBottomWidth: 1,
     borderBottomColor: "#F5F5F5",
   },
   divisionTitleContainer: {},

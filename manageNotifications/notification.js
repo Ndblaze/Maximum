@@ -93,3 +93,16 @@ const confirmationOfPushNotifucation = async (ids) => {
     });
 };
 
+//local scheduled notification
+export const sendLocalNotification = (title, topic) => {
+  Notifications.scheduleNotificationAsync({
+    content: {
+      title: title,
+      sound: "default",
+      body: topic,
+    },
+    trigger: {
+      seconds: 3,
+    },
+  });
+};

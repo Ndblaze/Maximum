@@ -78,7 +78,7 @@ const copyUserNameWhenPressAvatar = async () => {
 
 const Messaging = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
-  const [orderLimit, setOrderLimit] = useState(50);
+  const [orderLimit, setOrderLimit] = useState(250);
   const [loading, setLoading] = useState(false);
 
   //console.log(route)
@@ -236,6 +236,13 @@ const Messaging = ({ navigation, route }) => {
     );
   }, []);
 
+
+  // getItemLayout = (data, index) => ({
+  //   length: 33,
+  //   offset: 33 * index,
+  //   index,
+  // });
+
   return (
     <ImageBackground
       source={{
@@ -249,6 +256,10 @@ const Messaging = ({ navigation, route }) => {
         user={{
           _id: firebase.auth().currentUser.uid,
         }}
+        // listViewProps={{
+        //   getItemLayout: this.getItemLayout,
+        //   initialScrollIndex: 19,
+        // }}
         renderBubble={renderBubble}
         alwaysShowSend
         renderUsernameOnMessage

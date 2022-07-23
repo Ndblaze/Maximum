@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import {
+  MaterialCommunityIcons,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 import firebase from "firebase";
@@ -9,6 +13,7 @@ require("firebase/firestore");
 import Profile from "../screens/Profile/Profile";
 import HomeNavigator from "./HomeNavigator";
 import Security from "../screens/Security/Security";
+import ManagementNavigator from "./ManagementNavigator";
 
 //notification functions
 import { registerForPushNotificationsAsync } from "../manageNotifications/notification";
@@ -109,14 +114,30 @@ export const AppNavigator = () => {
         }}
       />
       <Tap.Screen
+        name="Admin"
+        component={ManagementNavigator}
+        options={{
+          tabBarIcon: ({ size, color }) => (
+            <MaterialIcons name="rule" size={size} color={color} />
+          ),
+          title: "Admin",
+          headerShown: false,
+          tabBarActiveTintColor: "#8CB8B9",
+        }}
+      />
+      <Tap.Screen
         name="Profile"
         component={Profile}
         options={{
           tabBarIcon: ({ size, color }) => (
             <MaterialCommunityIcons name="account" size={size} color={color} />
           ),
-          tabBarActiveTintColor: "#8CB8B9",
           title: "My Profile",
+          headerStyle: {
+            backgroundColor: "#8CB8B9",
+          },
+          tabBarActiveTintColor: "#8CB8B9",
+          headerTintColor: "white",
         }}
       />
     </Tap.Navigator>
