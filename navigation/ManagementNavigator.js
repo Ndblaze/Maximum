@@ -10,7 +10,7 @@ const Stack = createNativeStackNavigator();
 
 const ManagementNavigator = () => {
   return (
-    <Stack.Navigator mode="modal">
+    <Stack.Navigator mode="modal" initialRouteName="AdminManagement">
       <Stack.Screen
         name="AdminManagement"
         component={Management}

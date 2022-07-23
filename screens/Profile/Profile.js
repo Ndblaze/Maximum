@@ -2,6 +2,7 @@ import {
   StyleSheet,
   Text,
   View,
+  ScrollView,
   TextInput,
   TouchableOpacity,
 } from "react-native";
@@ -16,8 +17,7 @@ require("firebase/firebase-storage");
 import { updateCurrentScreen } from "../../firebase/useFirebase";
 
 const Profile = () => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [user, setUser] = useState({});
   const [newUsername, setNewUsername] = useState("");
 
   const focused = useIsFocused();
@@ -42,10 +42,8 @@ const Profile = () => {
   };
 
   const getUsername = () => {
-    const { uid, displayName, email } = firebase.auth().currentUser;
-    // console.log(uid);
-    setUsername(displayName);
-    setEmail(email);
+    const user = firebase.auth().currentUser;
+    setUser(user);
   };
 
   useEffect(() => {
@@ -61,37 +59,44 @@ const Profile = () => {
 
   return (
     <ScreenLayout style={styles.screen}>
-      <View style={styles.container}>
-        <View style={styles.photo}>
-          <Text style={styles.firstLetter}>
-            {username ? username.charAt(0) : ""}
+      <ScrollView style={styles.scrollview}>
+        <View style={styles.container}>
+          <View style={styles.photo}>
+            <Text style={styles.firstLetter}>
+              {user.displayName ? user.displayName.charAt(0) : ""}
+            </Text>
+          </View>
+          <Text style={styles.username}>
+            {user.displayName && user.displayName}
           </Text>
         </View>
-        <Text style={styles.username}>{username}</Text>
-      </View>
 
-      <Text style={styles.label}>Edit Username</Text>
-      <TextInput
-        maxLength={20}
-        style={styles.newUsername}
-        defaultValue={newUsername}
-        onChangeText={(text) => setNewUsername(text)}
-      />
+        <Text style={styles.label}>Edit Username</Text>
+        <TextInput
+          maxLength={20}
+          style={styles.newUsername}
+          defaultValue={newUsername}
+          onChangeText={(text) => setNewUsername(text)}
+        />
 
-      <View style={styles.saveContainer}>
-        <TouchableOpacity style={styles.save} onPress={() => changeUsername()}>
-          <Text style={styles.buttonText}> Save Changes </Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.saveContainer}>
+          <TouchableOpacity
+            style={styles.save}
+            onPress={() => changeUsername()}
+          >
+            <Text style={styles.buttonText}> Save Changes </Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={[styles.saveContainer, { marginTop: 50 }]}>
-        <TouchableOpacity
-          style={[styles.save, { backgroundColor: "tomato" }]}
-          onPress={() => firebase.auth().signOut()}
-        >
-          <Text style={styles.buttonText}> Logout </Text>
-        </TouchableOpacity>
-      </View>
+        <View style={[styles.saveContainer, { marginTop: 50 }]}>
+          <TouchableOpacity
+            style={[styles.save, { backgroundColor: "tomato" }]}
+            onPress={() => firebase.auth().signOut()}
+          >
+            <Text style={styles.buttonText}> Logout </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </ScreenLayout>
   );
 };
@@ -103,14 +108,17 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
   },
+  scrollview: {
+    height: '100%',
+  },
   container: {
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 30,
+    marginTop: 20,
   },
   photo: {
-    height: 200,
-    width: 200,
+    height: 150,
+    width: 150,
     borderRadius: 100,
     backgroundColor: "#F5F5F5",
     marginBottom: 20,
@@ -118,11 +126,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   firstLetter: {
-    fontSize: 80,
+    fontSize: 70,
     fontWeight: "600",
   },
   username: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: "600",
   },
   label: {

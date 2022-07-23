@@ -122,8 +122,7 @@ const setLastRead = (unreadMessageDocID, topicDetails, chatID) => {
       docID: chatID,
       lastRead: firebase.firestore.FieldValue.serverTimestamp(),
     })
-    .then(() => {
-    })
+    .then(() => {})
     .catch((error) => {
       //console.error("Error writing document: ", error);
     });
@@ -183,6 +182,32 @@ const sendTopicApprovalNotification = (topicDetails) => {
 
 // handling Already approved topics  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+//deleting the messages collection in the chat doc we want to delet
+//NOTE: for now u have to manually delet all the messages in the chat/message collection after deleting a chat
+const deleteAllMessagesInTheDoc = (topicDetails) => {
+  //console.log(topicDetails);
+  const db = firebase.firestore();
+
+  const unsubscribe = db;
+  db.collection("chats")
+    .doc(topicDetails.docID)
+    .collection("messages")
+    .delete()
+    .then(() => {
+      //console.log("Document successfully deleted!");
+      getAllDocInUnReadMeassages(topicDetails);
+    })
+    .then(() => {
+      alert("all documents reference have been deleted successfully");
+    })
+    .catch((error) => {
+      console.error("Error removing document: ", error);
+      alert(error);
+    });
+
+  return unsubscribe;
+};
+
 //deleting already approved topic
 export const deleteAreadyApprovedTopic = (topicDetails) => {
   //console.log(topicDetails);
@@ -193,7 +218,7 @@ export const deleteAreadyApprovedTopic = (topicDetails) => {
     .doc(topicDetails.docID)
     .delete()
     .then(() => {
-      console.log("Document successfully deleted!");
+      //console.log("Document successfully deleted!");
       getAllDocInUnReadMeassages(topicDetails);
     })
     .then(() => {
@@ -201,7 +226,7 @@ export const deleteAreadyApprovedTopic = (topicDetails) => {
     })
     .catch((error) => {
       console.error("Error removing document: ", error);
-      alert(error)
+      alert(error);
     });
 
   return unsubscribe;
@@ -223,7 +248,7 @@ const getAllDocInUnReadMeassages = (topicDetails) => {
     })
     .catch((error) => {
       //console.error("Error writing document: ", error);
-      alert(error)
+      alert(error);
     });
 
   return unsubscribe;
@@ -244,7 +269,7 @@ const deleteEachMessageRef = (docID, topicDetails) => {
     })
     .catch((error) => {
       console.error("Error removing document: ", error);
-      alert(error)
+      alert(error);
     });
 
   return unsubscribe;
