@@ -226,7 +226,7 @@ export const deleteAreadyApprovedTopic = (topicDetails) => {
     })
     .catch((error) => {
       console.error("Error removing document: ", error);
-      alert(error);
+      alert("You dont have permission to delete this topic");
     });
 
   return unsubscribe;

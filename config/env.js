@@ -5,15 +5,25 @@ import {
   storageBucket,
   messagingSenderId,
   appId,
+  admin,
 } from "@env";
- 
-//console.log(apiKey)    
 
-const API_KEY = apiKey
-const AUTH_DOMAIN = authDomain
-const PROJECT_ID = projectId
-const STORAGE_BUCKET = storageBucket
-const MESSAGE_SENDER_ID = messagingSenderId
-const APP_ID = appId
+//console.log(apiKey)
 
-export {API_KEY, AUTH_DOMAIN, PROJECT_ID, STORAGE_BUCKET, MESSAGE_SENDER_ID, APP_ID};
+const API_KEY = apiKey;
+const AUTH_DOMAIN = authDomain;
+const PROJECT_ID = projectId;
+const STORAGE_BUCKET = storageBucket;
+const MESSAGE_SENDER_ID = messagingSenderId;
+const APP_ID = appId;
+const Admin = admin;
+
+export {
+  API_KEY,
+  AUTH_DOMAIN,
+  PROJECT_ID,
+  STORAGE_BUCKET,
+  MESSAGE_SENDER_ID,
+  APP_ID,
+  Admin,
+};

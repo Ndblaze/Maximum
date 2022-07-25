@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Admin } from "../config/env";
 import {
   MaterialCommunityIcons,
   Ionicons,
@@ -22,6 +23,8 @@ const Tap = createBottomTabNavigator();
 
 export const AppNavigator = () => {
   const [notificationListner, setNoftificationListner] = useState();
+  const [currentUser, setCurrentUser] = useState({});
+
   const lastNotification = Notifications.useLastNotificationResponse();
 
   //set notification token to firebase
@@ -75,6 +78,9 @@ export const AppNavigator = () => {
     Notifications.addNotificationResponseReceivedListener(
       handleNotificationResponse
     );
+
+    const user = firebase.auth().currentUser;
+    setCurrentUser(user);
   }, []);
 
   const getName = (route) => {
@@ -123,6 +129,9 @@ export const AppNavigator = () => {
           title: "Admin",
           headerShown: false,
           tabBarActiveTintColor: "#8CB8B9",
+          tabBarItemStyle: {
+            display: currentUser.email === Admin ? "block" : "none",
+          },
         }}
       />
       <Tap.Screen
