@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Admin } from "../config/env";
+import navigation from "./rootNavigation";
 import {
   MaterialCommunityIcons,
   Ionicons,
@@ -64,11 +65,10 @@ export const AppNavigator = () => {
       },
     } = response;
 
-    //sueposed to navigate to a specific screen (fuctionality not fixed yet)
-    if (lastNotification) {
-      Linking.openURL(data);
-    }
-    // console.log(data);
+    navigation.navigate("Messaging", {
+      title: data.title,
+      docID: data.docID,
+    });
   };
 
   useEffect(() => {

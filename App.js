@@ -6,6 +6,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import AuthNavigator from "./navigation/AuthNavigator";
 import { AppNavigator } from "./navigation/AppNavigator";
 import navigationTheme from "./navigation/navigationTheme";
+import { navigationRef } from "./navigation/rootNavigation";
 import {
   API_KEY,
   AUTH_DOMAIN,
@@ -51,7 +52,7 @@ export default function App() {
   }, []);
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       {load && (
         <View style={styles.container}>
           {user ? <AppNavigator /> : <AuthNavigator />}

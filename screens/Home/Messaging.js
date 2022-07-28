@@ -81,7 +81,7 @@ const Messaging = ({ navigation, route }) => {
   const [orderLimit, setOrderLimit] = useState(250);
   const [loading, setLoading] = useState(false);
 
-  //console.log(route)
+  //console.log(route);
 
   // >>> Precaution purposes >>>>>
   //this is just to add a field inside so as to make this document appear in query snapshots
@@ -210,7 +210,10 @@ const Messaging = ({ navigation, route }) => {
               to: doc.data().notificationToken,
               subtitle: displayName,
               sound: "default",
-              data: { navigateTo: "Messaging" },
+              data: {
+                docID: route.params.docID,
+                title: route.params.title,
+              },
               title: route.params.title,
               body: message.text,
             });
@@ -235,7 +238,6 @@ const Messaging = ({ navigation, route }) => {
       GiftedChat.append(previousMessages, messages)
     );
   }, []);
-
 
   // getItemLayout = (data, index) => ({
   //   length: 33,
