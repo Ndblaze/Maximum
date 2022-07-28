@@ -1,6 +1,6 @@
 import * as Notifications from "expo-notifications";
 import Device from "expo-device";
-import { Linking, Platform } from "react-native";
+import { Platform } from "react-native";
 //import { Expo } from 'expo-server-sdk';
 
 Notifications.setNotificationHandler({

@@ -13,10 +13,9 @@ import firebase from "firebase";
 require("firebase/firestore");
 
 //notification functions
-import { sendPushNotification } from "../../manageNotifications/notification";
 
 //firebase hooks
-import { updateCurrentScreen } from "../../firebase/useFirebase";
+import { updateCurrentScreen, notifyUsers } from "../../firebase/useFirebase";
 
 const renderBubble = (props) => {
   return (
@@ -80,6 +79,7 @@ const Messaging = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
   const [orderLimit, setOrderLimit] = useState(250);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState({});
 
   //console.log(route);
 
@@ -156,8 +156,9 @@ const Messaging = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    const { uid } = firebase.auth().currentUser;
-    updateCurrentScreen(uid, route.params.docID);
+    const user = firebase.auth().currentUser;
+    setCurrentUser(user)
+    updateCurrentScreen(user.uid, route.params.docID);
   }, []);
 
   useLayoutEffect(() => {
@@ -187,53 +188,10 @@ const Messaging = ({ navigation, route }) => {
     return unsubscribe;
   };
 
-  const notifyUsers = (message) => {
-    const { uid, displayName } = firebase.auth().currentUser;
-    //add if uid dont send push notification
-    const unsubscribe = firebase.firestore();
-    unsubscribe
-      .collection("notifications")
-      .where("userCurrentScreen", "!=", route.params.docID)
-      .get()
-      .then((querySnapshot) => {
-        let numberOfDocs = 0;
-        let batch = [];
-        querySnapshot.forEach((doc) => {
-          numberOfDocs++;
-          if (numberOfDocs === 90) {
-            sendPushNotification(batch);
-            batch = [];
-            numberOfDocs = 0;
-          } else {
-            //console.log(doc.data().notificationToken);
-            batch.push({
-              to: doc.data().notificationToken,
-              subtitle: displayName,
-              sound: "default",
-              data: {
-                docID: route.params.docID,
-                title: route.params.title,
-              },
-              title: route.params.title,
-              body: message.text,
-            });
-          }
-        });
-        //sending the remaining not up to 90 // if number of docs not up to 90
-        if (numberOfDocs > 0) {
-          sendPushNotification(batch);
-          batch = [];
-          numberOfDocs = 0;
-        }
-      })
-      .catch((error) => {
-        console.log("Error getting documents: ", error);
-      });
-  };
-
   const onSend = useCallback((messages = []) => {
     sendMessage(messages[0]);
-    notifyUsers(messages[0]);
+    //notify all users of messages after each send
+    notifyUsers(messages[0], currentUser, route);
     setMessages((previousMessages) =>
       GiftedChat.append(previousMessages, messages)
     );
