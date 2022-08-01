@@ -285,7 +285,7 @@ export const notifyUsers = (message, user, route) => {
   const unsubscribe = firebase.firestore();
   unsubscribe
     .collection("notifications")
-    .where("userCurrentScreen", "!=", route.params.docID)
+    //.where("userCurrentScreen", "!=", route.params.docID)
     .get()
     .then((querySnapshot) => {
       let numberOfDocs = 0;
@@ -302,6 +302,7 @@ export const notifyUsers = (message, user, route) => {
             to: doc.data().notificationToken,
             subtitle: user.displayName,
             sound: "default",
+            badge: 3,
             data: {
               docID: route.params.docID,
               title: route.params.title,

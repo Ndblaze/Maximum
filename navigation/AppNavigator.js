@@ -26,8 +26,6 @@ export const AppNavigator = () => {
   const [notificationListner, setNoftificationListner] = useState();
   const [currentUser, setCurrentUser] = useState({});
 
-  const lastNotification = Notifications.useLastNotificationResponse();
-
   //set notification token to firebase
   const setNotificationToken = () => {
     const { uid } = firebase.auth().currentUser;
@@ -65,10 +63,17 @@ export const AppNavigator = () => {
       },
     } = response;
 
-    navigation.navigate("Messaging", {
-      title: data.title,
-      docID: data.docID,
-    });
+    if (data) {
+      //if data navigate to the room page them navigate to the specified room
+      navigation.navigate("Room");
+      navigation.navigate("Messaging", {
+        title: data.title,
+        docID: data.docID,
+      });
+
+      Notifications.dismissNotificationAsync()
+      
+    }
   };
 
   useEffect(() => {
