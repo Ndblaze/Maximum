@@ -1,16 +1,20 @@
 import { StyleSheet, Text, View } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
+import Listing from "../../components/common/Listing";
 import ScreenLayout from "../../components/common/ScreenLayout";
 import firebase from "firebase";
 require("firebase/firestore");
-require("firebase/firebase-storage");
 
 //use firbase hooks
-import { updateCurrentScreen } from "../../firebase/useFirebase";
+import {
+  updateCurrentScreen,
+  getSecurityTips,
+} from "../../firebase/useFirebase";
 
 const Security = () => {
   const focused = useIsFocused();
+  const [tips, setTips] = useState([]);
 
   useEffect(() => {
     const { uid } = firebase.auth().currentUser;
@@ -18,13 +22,38 @@ const Security = () => {
       updateCurrentScreen(uid, "Security");
     }
   }, [focused]);
+
+  useEffect(() => {
+    getTips();
+  }, []);
+
+  const getTips = async () => {
+    //console.log(await getSecurityTips());
+    const data = await getSecurityTips();
+    setTips(data);
+  };
+
   return (
     <ScreenLayout>
-      <Text>Security</Text>
+      <View style={styles.container}>
+        {tips &&
+          tips.map((list, index) => (
+            <Listing
+              key={index}
+              name={list.title}
+              detail={list}
+              screen={"SecurityDetails"}
+            />
+          ))}
+      </View>
     </ScreenLayout>
   );
 };
 
 export default Security;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    paddingTop: 5,
+  },
+});

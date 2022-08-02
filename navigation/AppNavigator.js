@@ -16,6 +16,7 @@ import Profile from "../screens/Profile/Profile";
 import HomeNavigator from "./HomeNavigator";
 import Security from "../screens/Security/Security";
 import ManagementNavigator from "./ManagementNavigator";
+import SecurityNavigator from "./SecurityNavigator";
 
 //notification functions
 import { registerForPushNotificationsAsync } from "../manageNotifications/notification";
@@ -71,8 +72,7 @@ export const AppNavigator = () => {
         docID: data.docID,
       });
 
-      Notifications.dismissNotificationAsync()
-      
+      Notifications.dismissNotificationAsync();
     }
   };
 
@@ -111,17 +111,14 @@ export const AppNavigator = () => {
       />
       <Tap.Screen
         name="Security"
-        component={Security}
+        component={SecurityNavigator}
         options={{
           tabBarIcon: ({ size, color }) => (
             <MaterialCommunityIcons name="security" size={size} color={color} />
           ),
           title: "Security Tips",
-          headerStyle: {
-            backgroundColor: "#8CB8B9",
-          },
+          headerShown: false,
           tabBarActiveTintColor: "#8CB8B9",
-          headerTintColor: "white",
         }}
       />
       <Tap.Screen

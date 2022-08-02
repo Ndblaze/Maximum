@@ -275,8 +275,6 @@ const deleteEachMessageRef = (docID, topicDetails) => {
   return unsubscribe;
 };
 
-
-
 ////>>>>>>>>>>>>>>>>>>>>>>  Do this after sending a message
 
 //notify all users after a send of message
@@ -285,7 +283,7 @@ export const notifyUsers = (message, user, route) => {
   const unsubscribe = firebase.firestore();
   unsubscribe
     .collection("notifications")
-    //.where("userCurrentScreen", "!=", route.params.docID)
+    .where("userCurrentScreen", "!=", route.params.docID)
     .get()
     .then((querySnapshot) => {
       let numberOfDocs = 0;
@@ -302,7 +300,6 @@ export const notifyUsers = (message, user, route) => {
             to: doc.data().notificationToken,
             subtitle: user.displayName,
             sound: "default",
-            badge: 3,
             data: {
               docID: route.params.docID,
               title: route.params.title,
@@ -323,3 +320,25 @@ export const notifyUsers = (message, user, route) => {
       console.log("Error getting documents: ", error);
     });
 };
+
+//>>>>>>>>>>>>>>.Security tips >>>>>>>>>>>>>>>>>>>>>/////////////
+
+export const getSecurityTips = () => {
+  const db = firebase.firestore();
+
+  const unsubscribe = db
+    .collection("security")
+    .get()
+    .then((querySnapshot) => {
+      let data = querySnapshot.docs.map((doc) => {
+        //console.log(doc.id);
+        return doc.data();
+      });
+      return data;
+    })
+    .catch((error) => {
+      //console.error("Error writing document: ", error);
+    });
+  return unsubscribe;
+};
+ 
