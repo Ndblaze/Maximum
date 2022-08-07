@@ -1,4 +1,10 @@
-import { StyleSheet, Text, View, Image } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableWithoutFeedback,
+} from "react-native";
 import React, { useState } from "react";
 import Layout from "../../components/Auth/Layout";
 import AuthButton from "../../components/Auth/AuthButton";
@@ -46,7 +52,7 @@ const Login = ({ navigation }) => {
         </View>
 
         <Formik
-          initialValues={{ email: "", password: "" }} 
+          initialValues={{ email: "", password: "" }}
           onSubmit={(values) => sendCode(values)}
           validationSchema={validationSchema}
         >
@@ -83,10 +89,10 @@ const Login = ({ navigation }) => {
                 error={errors.password}
                 visible={touched.password}
               />
-              <View>
+              <TouchableWithoutFeedback onPress={() => navigation.navigate("ForgotPassword")}>
                 <AppText style={styles.text}> Forgot password? </AppText>
-              </View>
-              <AuthButton title="Request Code" onPress={handleSubmit} />
+              </TouchableWithoutFeedback>
+              <AuthButton title="Login Now" onPress={handleSubmit} />
             </>
           )}
         </Formik>
@@ -144,8 +150,9 @@ const styles = StyleSheet.create({
   },
   text: {
     textAlign: "left",
-    color: "#6e6969",
-    marginVertical: 10,
+    color: "#8CB8B9",
+    marginVertical: 15,
     fontSize: 15,
+    fontWeight: "500",
   },
 });

@@ -23,6 +23,27 @@ export const updateCurrentScreen = (uid, docName) => {
   return unsubscribe;
 };
 
+//handling the delete notification token on logout if app >>>>>>>>>>>>>>>>>>>> //////////////////
+
+export const deletNotificationToken = (user) => {
+  const db = firebase.firestore();
+
+  const unsubscribe = db;
+  db.collection("notifications")
+    .doc(user.uid)
+    .delete()
+    .then(() => {
+      //console.log("Document successfully deleted!");
+      firebase.auth().signOut();
+    })
+    .catch((error) => {
+      console.error("Error removing document: ", error);
+      alert(error);
+    });
+
+  return unsubscribe;
+};
+
 // handling adding and approving new topics  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 //add a new matter
@@ -341,4 +362,3 @@ export const getSecurityTips = () => {
     });
   return unsubscribe;
 };
- 

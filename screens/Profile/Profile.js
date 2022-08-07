@@ -14,7 +14,10 @@ require("firebase/firestore");
 require("firebase/firebase-storage");
 
 //use firebase hooks
-import { updateCurrentScreen } from "../../firebase/useFirebase";
+import {
+  updateCurrentScreen,
+  deletNotificationToken,
+} from "../../firebase/useFirebase";
 
 const Profile = () => {
   const [user, setUser] = useState({});
@@ -57,6 +60,8 @@ const Profile = () => {
     }
   }, [focused]);
 
+
+
   return (
     <ScreenLayout style={styles.screen}>
       <ScrollView style={styles.scrollview}>
@@ -91,7 +96,7 @@ const Profile = () => {
         <View style={[styles.saveContainer, { marginTop: 50 }]}>
           <TouchableOpacity
             style={[styles.save, { backgroundColor: "tomato" }]}
-            onPress={() => firebase.auth().signOut()}
+            onPress={() => deletNotificationToken(user)}
           >
             <Text style={styles.buttonText}> Logout </Text>
           </TouchableOpacity>
@@ -109,7 +114,7 @@ const styles = StyleSheet.create({
     paddingRight: 15,
   },
   scrollview: {
-    height: '100%',
+    height: "100%",
   },
   container: {
     alignItems: "center",
