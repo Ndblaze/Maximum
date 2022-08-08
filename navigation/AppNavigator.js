@@ -14,7 +14,6 @@ require("firebase/firestore");
 
 import Profile from "../screens/Profile/Profile";
 import HomeNavigator from "./HomeNavigator";
-import Security from "../screens/Security/Security";
 import ManagementNavigator from "./ManagementNavigator";
 import SecurityNavigator from "./SecurityNavigator";
 
@@ -88,6 +87,7 @@ export const AppNavigator = () => {
     setCurrentUser(user);
   }, []);
 
+  //get the route name of the current screen
   const getName = (route) => {
     const routeName = getFocusedRouteNameFromRoute(route);
     return routeName;

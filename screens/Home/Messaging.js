@@ -12,10 +12,12 @@ import { Linking } from "react-native";
 import firebase from "firebase";
 require("firebase/firestore");
 
-//notification functions
-
 //firebase hooks
 import { updateCurrentScreen, notifyUsers } from "../../firebase/useFirebase";
+import {
+  sendMessage,
+  initializeMyUnreadMessages,
+} from "../../firebase/useFirbaseMessaging";
 
 const renderBubble = (props) => {
   return (
@@ -75,89 +77,16 @@ const copyUserNameWhenPressAvatar = async () => {
   });
 };
 
+//>>>>>>>>>>>>>>>>>>> beginning of component  >>>>>>>>>>>>>>>>>>>>>>>
 const Messaging = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
   const [orderLimit, setOrderLimit] = useState(250);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
 
-  //console.log(route);
-
-  // >>> Precaution purposes >>>>>
-  //this is just to add a field inside so as to make this document appear in query snapshots
-  const initializeMyUnreadMessages = (uid) => {
-    const db = firebase.firestore();
-
-    const unsubscribe = db
-      .collection("unreadMessages")
-      .doc(uid)
-      .set({
-        docID: uid,
-      })
-      .then(() => {
-        //console.log("Document successfully written!");
-      })
-      .catch((error) => {
-        //console.error("Error writing document: ", error);
-      });
-
-    return unsubscribe;
-  };
-
-  //update last red chat
-  const updateLastRead = (docID) => {
-    const { uid } = firebase.auth().currentUser;
-    const db = firebase.firestore();
-    const unsubscribe = db
-      .collection("unreadMessages")
-      .doc(uid)
-      .collection("chat-rooms")
-      .doc(docID)
-      .update({
-        lastRead: firebase.firestore.FieldValue.serverTimestamp(),
-      })
-      .then(() => {
-        //console.log("Document successfully written!");
-      })
-      .catch((error) => {
-        //console.error("Error writing document: ", error);
-      });
-
-    return unsubscribe;
-  };
-
-  const sendMessage = (chat) => {
-    const { displayName, uid } = firebase.auth().currentUser;
-    // console.log(chat);
-    const db = firebase.firestore();
-    const unsubscribe = db
-      .collection("chats")
-      .doc(route.params.docID)
-      .collection("messages")
-      .add({
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        _id: chat._id,
-        text: chat.text,
-        createdAt: chat.createdAt.toString(),
-        user: {
-          _id: uid,
-          name: displayName,
-        },
-      })
-      .then((docRef) => {
-        updateLastRead(route.params.docID);
-        //console.log("Document written with ID: ", docRef.id);
-      })
-      .catch((error) => {
-        //console.error("Error adding document: ", error);
-      });
-
-    return unsubscribe;
-  };
-
   useEffect(() => {
     const user = firebase.auth().currentUser;
-    setCurrentUser(user)
+    setCurrentUser(user);
     updateCurrentScreen(user.uid, route.params.docID);
   }, []);
 
@@ -189,19 +118,13 @@ const Messaging = ({ navigation, route }) => {
   };
 
   const onSend = useCallback((messages = []) => {
-    sendMessage(messages[0]);
+    sendMessage(messages[0], route);
     //notify all users of messages after each send
     notifyUsers(messages[0], currentUser, route);
     setMessages((previousMessages) =>
       GiftedChat.append(previousMessages, messages)
     );
   }, []);
-
-  // getItemLayout = (data, index) => ({
-  //   length: 33,
-  //   offset: 33 * index,
-  //   index,
-  // });
 
   return (
     <ImageBackground
@@ -215,11 +138,8 @@ const Messaging = ({ navigation, route }) => {
         onSend={(messages) => onSend(messages)}
         user={{
           _id: firebase.auth().currentUser.uid,
+          name: firebase.auth().currentUser.displayName,
         }}
-        // listViewProps={{
-        //   getItemLayout: this.getItemLayout,
-        //   initialScrollIndex: 19,
-        // }}
         renderBubble={renderBubble}
         alwaysShowSend
         renderUsernameOnMessage

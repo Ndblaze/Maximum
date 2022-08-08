@@ -23,23 +23,25 @@ const UnreadMessages = ({ roomID }) => {
 
   //get last read chat
   const getLastRead = (roomID) => {
-    const { uid } = firebase.auth().currentUser;
-    const db = firebase.firestore();
-    const unsubscribe = db
-      .collection("unreadMessages")
-      .doc(uid)
-      .collection("chat-rooms")
-      .doc(roomID)
-      .onSnapshot((doc) => {
-        //check if doc data exists befor calling the other functions
-        if (doc.data()) {
-          const lastRead = doc.data().lastRead;
-          //console.log(lastRead?.valueOf());
-          getLastMessages(roomID, lastRead?.valueOf());
-        }
-      });
+    const user = firebase.auth().currentUser;
+    if (user) {
+      const db = firebase.firestore();
+      const unsubscribe = db
+        .collection("unreadMessages")
+        .doc(user.uid)
+        .collection("chat-rooms")
+        .doc(roomID)
+        .onSnapshot((doc) => {
+          //check if doc data exists befor calling the other functions
+          if (doc.data()) {
+            const lastRead = doc.data().lastRead;
+            //console.log(lastRead?.valueOf());
+            getLastMessages(roomID, lastRead?.valueOf());
+          }
+        });
 
-    return unsubscribe;
+      return unsubscribe;
+    }
   };
 
   //getLastMessages twenty messages

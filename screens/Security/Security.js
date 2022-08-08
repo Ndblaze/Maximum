@@ -7,10 +7,8 @@ import firebase from "firebase";
 require("firebase/firestore");
 
 //use firbase hooks
-import {
-  updateCurrentScreen,
-  getSecurityTips,
-} from "../../firebase/useFirebase";
+import { updateCurrentScreen } from "../../firebase/useFirebase";
+import { getSecurityTips } from "../../firebase/useFirebaseSecurity";
 
 const Security = () => {
   const focused = useIsFocused();
