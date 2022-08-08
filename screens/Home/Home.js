@@ -10,6 +10,8 @@ import Sections from "../../components/common/Sections";
 import { updateCurrentScreen } from "../../firebase/useFirebase";
 
 const Home = ({ navigation }) => {
+  const focused = useIsFocused();
+
   //loading data for
   const [loading, setLoading] = useState(true);
   //Admin room list details
@@ -21,10 +23,7 @@ const Home = ({ navigation }) => {
     title: "Hot-spots",
   });
 
-  const focused = useIsFocused();
-
-  useEffect(() => {
-    setLoading(true);
+  const getChatRooms = () => {
     const db = firebase.firestore();
     const unsubscribe = db.collection("chats").onSnapshot((querySnapshot) => {
       let admin = { title: "", chatRoomTitle: [] };
@@ -72,6 +71,15 @@ const Home = ({ navigation }) => {
     });
 
     return unsubscribe;
+  };
+
+  useEffect(() => {
+    const user = firebase.auth().currentUser;
+    setLoading(true);
+    //if user is signed in then listen for this chat snapshots
+    if (user) {
+      getChatRooms();
+    }
   }, []);
 
   useEffect(() => {

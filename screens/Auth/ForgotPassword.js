@@ -25,7 +25,8 @@ const ForgotPassword = ({ navigation }) => {
           navigation.navigate("LinkSent", { email: values.email });
         })
         .catch((error) => {
-          console.log(error);
+          //console.log(error);
+          alert(error);
         });
     }
   };
