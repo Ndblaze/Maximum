@@ -13,10 +13,11 @@ import firebase from "firebase";
 require("firebase/firestore");
 
 //firebase hooks
-import { updateCurrentScreen, notifyUsers } from "../../firebase/useFirebase";
+import { updateCurrentScreen } from "../../firebase/useFirebase";
 import {
   sendMessage,
   initializeMyUnreadMessages,
+  notifyUsers,
 } from "../../firebase/useFirbaseMessaging";
 
 const renderBubble = (props) => {
@@ -85,9 +86,16 @@ const Messaging = ({ navigation, route }) => {
   const [currentUser, setCurrentUser] = useState({});
 
   useEffect(() => {
-    const user = firebase.auth().currentUser;
-    setCurrentUser(user);
-    updateCurrentScreen(user.uid, route.params.docID);
+    let isMounted = true;
+    if (isMounted) {
+      const user = firebase.auth().currentUser;
+      setCurrentUser(user);
+      updateCurrentScreen(user.uid, route.params.docID);
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useLayoutEffect(() => {

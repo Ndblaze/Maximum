@@ -48,7 +48,11 @@ const OldTopic = () => {
   };
 
   useEffect(() => {
-    getAllApprovedChat();
+    const user = firebase.auth().currentUser;
+
+    if (user) {
+      getAllApprovedChat();
+    }
   }, []);
 
   return (

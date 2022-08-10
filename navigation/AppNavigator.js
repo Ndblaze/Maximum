@@ -76,15 +76,22 @@ export const AppNavigator = () => {
   };
 
   useEffect(() => {
-    setNotificationToken();
+    let isMounted = true;
+    if (isMounted) {
+      setNotificationToken();
 
-    Notifications.addNotificationReceivedListener(handleNotification);
-    Notifications.addNotificationResponseReceivedListener(
-      handleNotificationResponse
-    );
+      Notifications.addNotificationReceivedListener(handleNotification);
+      Notifications.addNotificationResponseReceivedListener(
+        handleNotificationResponse
+      );
 
-    const user = firebase.auth().currentUser;
-    setCurrentUser(user);
+      const user = firebase.auth().currentUser;
+      setCurrentUser(user);
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   //get the route name of the current screen

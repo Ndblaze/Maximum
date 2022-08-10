@@ -56,8 +56,13 @@ const NewTopic = () => {
   };
 
   useEffect(() => {
-    getAllNewRequestTopics();
-  }, []);
+    const user = firebase.auth().currentUser;
+
+    if (user) {
+      getAllNewRequestTopics();
+    }
+
+  }, []); 
 
   return (
     <ScrollView style={styles.container}>

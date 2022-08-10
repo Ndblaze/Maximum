@@ -6,7 +6,7 @@ require("firebase/firebase-storage");
 import {
   sendLocalNotification,
   sendPushNotification,
-} from "../manageNotifications/notification";
+} from "../manageNotifications/notification";  
 
 export const updateCurrentScreen = (uid, docName) => {
   //this updates the current scrren field in the notification collection
@@ -47,6 +47,7 @@ export const deletNotificationToken = (user) => {
   return unsubscribe;
 };
 
+
 // handling adding and approving new topics  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 //add a new matter
@@ -73,7 +74,7 @@ export const addNewUnapprovedMatter = (topic, user) => {
     .then((docRef) => {
       //console.log(docRef.id);
       //send scheduled local notification
-      const request = "Add Topic Request";
+      const request = "Add-New Topic Request";
       const status = `your topic "${topic}" has been send to the admin for approval, This is necessary for the regulation of the app usage, be patient while your topic is been reviewed Thank you!`;
       sendLocalNotification(request, status);
     })
@@ -299,49 +300,4 @@ const deleteEachMessageRef = (docID, topicDetails) => {
   return unsubscribe;
 };
 
-////>>>>>>>>>>>>>>>>>>>>>>  Do this after sending a message
-
-//notify all users after a send of message
-export const notifyUsers = (message, user, route) => {
-  //add if uid dont send push notification
-  const unsubscribe = firebase.firestore();
-  unsubscribe
-    .collection("notifications")
-    .where("userCurrentScreen", "!=", route.params.docID)
-    .get()
-    .then((querySnapshot) => {
-      let numberOfDocs = 0;
-      let batch = [];
-      querySnapshot.forEach((doc) => {
-        numberOfDocs++;
-        if (numberOfDocs === 90) {
-          sendPushNotification(batch);
-          batch = [];
-          numberOfDocs = 0;
-        } else {
-          //console.log(doc.data().notificationToken);
-          batch.push({
-            to: doc.data().notificationToken,
-            subtitle: user.displayName,
-            sound: "default",
-            data: {
-              docID: route.params.docID,
-              title: route.params.title,
-            },
-            title: route.params.title,
-            body: message.text,
-          });
-        }
-      });
-      //sending the remaining not up to 90 // if number of docs not up to 90
-      if (numberOfDocs > 0) {
-        sendPushNotification(batch);
-        batch = [];
-        numberOfDocs = 0;
-      }
-    })
-    .catch((error) => {
-      console.log("Error getting documents: ", error);
-    });
-};
 

@@ -12,7 +12,7 @@ const Management = ({ navigation }) => {
       <Listing name={"Manage Security Tips"} screen={"SecurityTips"} />
     </View>
   );
-};
+}; 
 
 export default Management;
 

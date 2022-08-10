@@ -76,7 +76,13 @@ const UnreadMessages = ({ roomID }) => {
   };
 
   useEffect(() => {
-    return getLastRead(roomID);
+    let isMounted = true;
+    if (isMounted) {
+      getLastRead(roomID);
+    }
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -132,8 +138,14 @@ const Sections = ({ sectionsObject }) => {
   };
 
   useEffect(() => {
-    const user = firebase.auth().currentUser;
-    setCurrentUser(user);
+    let isMounted = true;
+    if (isMounted) {
+      const user = firebase.auth().currentUser;
+      setCurrentUser(user);
+    }
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -180,7 +192,7 @@ const Sections = ({ sectionsObject }) => {
       </View>
     </View>
   );
-};
+}; 
 
 export default Sections;
 
