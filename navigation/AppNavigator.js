@@ -19,6 +19,7 @@ import SecurityNavigator from "./SecurityNavigator";
 
 //notification functions
 import { registerForPushNotificationsAsync } from "../manageNotifications/notification";
+import { notificationSettings } from "../firebase/useFirebaseProfile";
 
 const Tap = createBottomTabNavigator();
 
@@ -156,6 +157,15 @@ export const AppNavigator = () => {
           },
           tabBarActiveTintColor: "#8CB8B9",
           headerTintColor: "white",
+          headerRight: ({ size, color }) => (
+            <MaterialIcons
+              style={{ marginRight: 20 }}
+              name="notifications-active"
+              size={24}
+              color="white"
+              onPress={() => notificationSettings(currentUser)}
+            />
+          ),
         }}
       />
     </Tap.Navigator>

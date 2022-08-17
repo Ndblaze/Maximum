@@ -99,17 +99,20 @@ export const notifyUsers = (message, user, route) => {
           numberOfDocs = 0;
         } else {
           //console.log(doc.data().notificationToken);
-          batch.push({
-            to: doc.data().notificationToken,
-            subtitle: user.displayName,
-            sound: "default",
-            data: {
-              docID: route.params.docID,
+          //if there is notification token then push to batch
+          if (doc.data().notificationToken) {
+            batch.push({
+              to: doc.data().notificationToken,
+              subtitle: user.displayName,
+              sound: "default",
+              data: {
+                docID: route.params.docID,
+                title: route.params.title,
+              },
               title: route.params.title,
-            },
-            title: route.params.title,
-            body: message.text,
-          });
+              body: message.text,
+            });
+          }
         }
       });
       //sending the remaining not up to 90 // if number of docs not up to 90

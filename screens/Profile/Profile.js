@@ -9,6 +9,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
 import ScreenLayout from "../../components/common/ScreenLayout";
+import { EvilIcons } from "@expo/vector-icons";
 import firebase from "firebase";
 require("firebase/firestore");
 require("firebase/firebase-storage");
@@ -60,8 +61,6 @@ const Profile = () => {
     }
   }, [focused]);
 
-
-
   return (
     <ScreenLayout style={styles.screen}>
       <ScrollView style={styles.scrollview}>
@@ -93,7 +92,7 @@ const Profile = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.saveContainer, { marginTop: 50 }]}>
+        <View style={[styles.saveContainer, { marginTop: 40 }]}>
           <TouchableOpacity
             style={[styles.save, { backgroundColor: "tomato" }]}
             onPress={() => deletNotificationToken(user)}
