@@ -17,6 +17,7 @@ export const updateCurrentScreen = (uid, docName) => {
     .set(
       {
         userCurrentScreen: docName,
+        userID: uid
       },
       { merge: true }
     );
